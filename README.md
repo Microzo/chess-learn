@@ -5,10 +5,10 @@ Game catur offline ala chess.com: belajar lawan bot dengan analisa langkah live,
 ## Fitur
 | Mode | Deskripsi |
 |---|---|
-| **Belajar Strategi** | 40 pelajaran (dasar, 14 opening teruji, taktik, strategi middlegame, endgame termasuk Lucena dan Philidor, pola mat) dengan demo interaktif langkah demi langkah di papan, 12 puzzle **Latihan taktik** dengan petunjuk, dan glosarium 45 istilah. Progres tersimpan di perangkat. Posisi demo dan puzzle diperiksa dengan Stockfish. |
+| **Belajar Strategi** | 40 pelajaran (dasar, 14 opening teruji, taktik, strategi middlegame, endgame termasuk Lucena dan Philidor, pola mat) dengan demo interaktif langkah demi langkah di papan, 12 puzzle **Latihan taktik** dengan petunjuk, dan glosarium 45 istilah. Tiap pelajaran opening punya mode **Latih sendiri**: Anda memainkan satu sisi, lawan membalas sesuai teori, dan langkah di luar teori dikoreksi. Progres tersimpan di perangkat. Posisi demo dan puzzle diperiksa dengan Stockfish. |
 | **Belajar vs Bot** | 8 level bot. Setiap langkah langsung diberi label (Teori, Terbaik, Sangat baik, Bagus, Kurang akurat, Kesalahan, Blunder), selisih evaluasi, dan langkah terbaik. Ada tombol Saran dan Ulangi. |
 | **Main berdua (PvP)** | Dua pemain di satu layar, papan bisa berputar otomatis, jam catur (1 sampai 15 menit, dengan atau tanpa tambahan waktu), batal langkah (tanpa jam), remis, menyerah. |
-| **Replay & Analisa** | Navigasi langkah (tombol/panah keyboard), grafik evaluasi, akurasi per pemain, ringkasan kategori, nama opening, papan alternatif terbaik. Bisa impor PGN. |
+| **Replay & Analisa** | Navigasi langkah (tombol/panah keyboard), grafik evaluasi, akurasi per pemain, ringkasan kategori, nama opening, papan alternatif terbaik. Bisa impor PGN, salin atau unduh PGN, dan cadangkan atau pulihkan semua partai (berkas JSON). |
 
 Partai tersimpan otomatis di perangkat (localStorage).
 
@@ -19,7 +19,8 @@ TypeScript, Vite, chess.js (aturan), Stockfish 17.1 WASM lite single-thread di W
 ```
 npm install        # sekaligus menyalin engine ke public/engine
 npm run dev        # http://localhost:5173 (juga bisa dari HP, lihat bawah)
-npm test
+npm test          # tes unit + tes layar (vitest, DOM tiruan), tanpa browser
+npm run test:e2e   # tes end-to-end di browser sungguhan + engine asli + offline (Playwright)
 npm run build      # hasil di dist/
 npm run preview    # uji build produksi di http://localhost:4173
 ```
@@ -46,7 +47,7 @@ src/
 └─ types/
 public/         engine/ (Stockfish), icons/, manifest, sw.js
 scripts/        copy-engine, make-icons
-tests/          vitest
+tests/          vitest: analysis/ game/ lessons/ storage/ ui/ (layar, DOM tiruan); e2e/ (Playwright)
 ```
 
 ## Cara penilaian langkah
@@ -59,3 +60,7 @@ Evaluasi engine diubah ke peluang menang; kategori ditentukan dari penurunan pel
 
 ## Kredit
 Bidak: set SVG orisinal buatan proyek ini (CC0, lihat `public/pieces/original/LICENSE.txt`). Suara disintesis lewat WebAudio.
+
+## Pengujian
+- `npm test`: tes logika (analisa, jam, pelajaran, puzzle, penyimpanan) dan tes layar dengan DOM tiruan (papan, puzzle, latihan opening, PvP berjam, cadangan, layar utama).
+- `npm run test:e2e`: membangun aplikasi, menjalankannya dengan `vite preview`, lalu menguji di browser sungguhan: klik dan seret mouse, jam, Stockfish asli (bot, label Brilian), unduh/pulihkan cadangan, dan **mode offline** (service worker + engine WASM dari cache). Lokal memakai Microsoft Edge yang terpasang; di mesin lain jalankan `npx playwright install chromium` lalu `E2E_CHANNEL=chromium npm run test:e2e`.

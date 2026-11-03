@@ -3,10 +3,11 @@ import { go, type Screen } from '../../app/router';
 import { accuracyOf, classCounts, CLASS_LABEL } from '../../core/analysis/analyzer';
 import { openingAt } from '../../core/analysis/openings';
 import { engineReady, getAnalyzer } from '../../core/engine/instance';
-import { deleteGame, getGame, listGames, newId, saveGame } from '../../core/storage/games';
+import { deleteGame, exportBackup, getGame, importBackup, listGames, newId, saveGame } from '../../core/storage/games';
 import type { Evaluation, MoveAnalysis, MoveClass, SavedGame } from '../../types';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
+import { copyText, downloadText, localDate, safeFilename } from '../../ui/download';
 import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 
@@ -50,9 +51,28 @@ export function replayList(): Screen {
     }
   };
 
+  const fileIn = h('input', { type: 'file', accept: '.json,application/json', style: 'display:none' }) as HTMLInputElement;
+  fileIn.onchange = async () => {
+    const f = fileIn.files?.[0];
+    fileIn.value = '';
+    if (!f) return;
+    try {
+      const n = importBackup(await f.text());
+      render();
+      alert(`${n} partai dipulihkan.`);
+    } catch (e) {
+      alert((e as Error).message);
+    }
+  };
+  const backup = () => {
+    if (listGames().length === 0) { alert('Belum ada partai untuk dicadangkan.'); return; }
+    downloadText(`chess-learn-cadangan-${localDate()}.json`, exportBackup(), 'application/json');
+  };
+
   const el = h('div', { class: 'screen' },
     h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, 'Replay & Analisa')),
     listBox,
+    h('div', { class: 'row' }, h('button', { class: 'btn', onclick: backup }, '⬇ Cadangkan semua'), h('button', { class: 'btn', onclick: () => fileIn.click() }, '⬆ Pulihkan'), fileIn),
     h('details', {}, h('summary', {}, 'Impor PGN'), pgnBox, h('button', { class: 'btn', onclick: importPgn }, 'Impor')),
   );
   return { el };
@@ -83,6 +103,12 @@ export function replayScreen(id: string): Screen {
   const moves = new MoveList((ply) => { idx = ply; show(); });
   const bestBtn = h('button', { class: 'btn', onclick: () => { showBest = !showBest; show(); } }, '💡 Alt');
   const analyseBtn = h('button', { class: 'btn primary', onclick: () => void runAnalysis() }, '🔍 Analisa partai');
+
+  const copyBtn = h('button', { class: 'btn', onclick: async () => {
+    const ok = await copyText(game.pgn);
+    copyBtn.textContent = ok ? '✔ Tersalin' : 'Gagal menyalin';
+    setTimeout(() => { copyBtn.textContent = '📋 Salin PGN'; }, 1500);
+  } }, '📋 Salin PGN');
 
   const analysis = (): MoveAnalysis[] => game!.analysis ?? [];
 
@@ -189,6 +215,9 @@ export function replayScreen(id: string): Screen {
       bestBtn,
       h('button', { class: 'btn', onclick: () => { flip = !flip; show(); } }, '⟲')),
     cardBox, graphBox, summary, analyseBtn, progress, moves.el,
+    h('div', { class: 'row' },
+      copyBtn,
+      h('button', { class: 'btn', onclick: () => downloadText(`${safeFilename(`${game.white}-vs-${game.black}`)}.pgn`, game.pgn, 'application/x-chess-pgn') }, '⬇ Unduh PGN')),
   );
 
   renderSummary();

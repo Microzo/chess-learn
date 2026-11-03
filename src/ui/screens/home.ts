@@ -25,6 +25,11 @@ export function homeScreen(): Screen {
     menu('👥', 'Main berdua', 'Dua pemain, satu perangkat', () => go(pvpSetup)),
     menu('📼', 'Replay & Analisa', 'Putar ulang, grafik, akurasi, opening', () => go(replayList)),
     snd,
+    h('p', { class: 'muted legal' },
+      'Perangkat lunak bebas (GPL-3.0). Memakai Stockfish dan chess.js. ',
+      h('a', { href: `${import.meta.env.BASE_URL}licenses/README.txt`, target: '_blank', rel: 'noopener' }, 'Lisensi dan atribusi'),
+      ' · ',
+      h('a', { href: 'https://github.com/Microzo/chess-learn', target: '_blank', rel: 'noopener' }, 'Kode sumber')),
   );
   return { el };
 }

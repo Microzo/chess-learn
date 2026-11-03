@@ -6,6 +6,7 @@ import { h } from '../../ui/dom';
 import { homeScreen } from '../../ui/screens/home';
 import { puzzleList, solvedCount } from './puzzles';
 import { PUZZLES } from '../../data/puzzles';
+import { PracticeSession, type Side } from './practice-core';
 
 const DONE_KEY = 'chess-learn:lessons-done';
 
@@ -76,7 +77,15 @@ export function lessonScreen(id: string): Screen {
     h('small', {}, `${CATEGORY_LABEL[lesson.category].icon} ${CATEGORY_LABEL[lesson.category].title}`),
   );
 
-  if (lesson.demo) el.append(demoPlayer(lesson.demo));
+  let cleanup: (() => void) | undefined;
+  if (lesson.demo) {
+    el.append(demoPlayer(lesson.demo));
+    if (lesson.category === 'opening' && lesson.demo.steps.some((st) => st.san)) {
+      const p = practicePanel(lesson.demo);
+      cleanup = p.destroy;
+      el.append(p.el);
+    }
+  }
 
   el.append(
     h('div', { class: 'lesson-text' }, ...lesson.body.map((p) => h('p', {}, p))),
@@ -102,7 +111,7 @@ export function lessonScreen(id: string): Screen {
       doneBtn,
       next && h('button', { class: 'btn', onclick: () => go(() => lessonScreen(next.id)) }, 'Pelajaran berikutnya →')),
   );
-  return { el };
+  return { el, destroy: () => cleanup?.() };
 }
 
 function demoPlayer(demo: Demo): HTMLElement {
@@ -181,4 +190,104 @@ export function glossaryScreen(): Screen {
     listBox,
   );
   return { el };
+}
+
+/** Latihan: pemain memainkan satu sisi dari teori, lawan dimainkan otomatis. */
+function practicePanel(demo: Demo): { el: HTMLElement; destroy: () => void } {
+  let session: PracticeSession | null = null;
+  let timer: number | undefined;
+  let last: [string, string] | null = null;
+  let hint: string[] | null = null;
+  let busy = false;
+
+  const board = new Board((from, to, promo) => attempt(from, to, promo));
+  const feedback = h('div', { class: 'card demo-note' });
+  const progress = h('small', { class: 'demo-counter' });
+  const body = h('div', { class: 'practice-body' });
+  const box = h('details', { class: 'practice' }, h('summary', {}, '🎯 Latih sendiri'), body);
+
+  function menu() {
+    window.clearTimeout(timer);
+    session = null;
+    body.replaceChildren(
+      h('p', { class: 'muted' }, 'Mainkan teori ini sendiri: pilih sisi, lalu temukan langkah yang benar. Lawan membalas otomatis.'),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn primary', onclick: () => start('w') }, 'Main sebagai Putih'),
+        h('button', { class: 'btn primary', onclick: () => start('b') }, 'Main sebagai Hitam')),
+    );
+  }
+
+  function start(side: Side) {
+    window.clearTimeout(timer);
+    session = new PracticeSession(demo, side);
+    last = null; hint = null; busy = false;
+    feedback.replaceChildren(h('p', {}, `Anda ${side === 'w' ? 'Putih' : 'Hitam'}. ${demo.intro}`));
+    body.replaceChildren(board.el, progress, feedback, actions);
+    draw();
+    scheduleOpponent();
+  }
+
+  const hintBtn = h('button', { class: 'btn', onclick: () => showHint() }, '💡 Petunjuk');
+  const againBtn = h('button', { class: 'btn', onclick: () => session && start(session.side) }, '⟲ Ulangi');
+  const backBtn = h('button', { class: 'btn', onclick: () => menu() }, 'Ganti sisi');
+  const actions = h('div', { class: 'row' });
+
+  function draw() {
+    const s = session!;
+    board.set(s.chess, { flip: s.side === 'b', last, hint, movable: busy || s.finished ? null : s.side });
+    const done = s.demo.steps.filter((_, i) => i < s.step).length;
+    progress.textContent = `Langkah ${done} dari ${s.total}${s.mistakes ? ` · ${s.mistakes} kesalahan` : ''}`;
+    actions.replaceChildren(...(s.finished ? [againBtn, backBtn] : [hintBtn, againBtn, backBtn]));
+  }
+
+  function scheduleOpponent() {
+    const s = session!;
+    if (!s.opponentToMove) { busy = false; draw(); return; }
+    busy = true;
+    draw();
+    timer = window.setTimeout(() => {
+      const m = s.playOpponent();
+      if (m) { last = [m.from, m.to]; hint = null; feedback.replaceChildren(h('strong', {}, m.san), h('p', {}, m.note)); }
+      busy = false;
+      if (s.finished) finish(); else draw();
+    }, 500);
+  }
+
+  function finish() {
+    const s = session!;
+    draw();
+    feedback.append(h('p', {}, s.mistakes === 0
+      ? '✔ Sempurna! Teori dimainkan tanpa kesalahan.'
+      : `Selesai dengan ${s.mistakes} kesalahan. Ulangi sampai lancar.`));
+  }
+
+  function attempt(from: string, to: string, promo?: string) {
+    const s = session;
+    if (!s || busy || s.finished) return;
+    const r = s.tryMove(from, to, promo);
+    if (r.result === 'illegal' || r.result === 'blocked') { draw(); return; }
+    if (r.result === 'wrong') {
+      hint = null;
+      feedback.replaceChildren(h('strong', {}, 'Bukan langkah teori'), h('p', {}, 'Langkah itu legal, tetapi bukan yang dimainkan di variasi ini. Coba lagi atau minta petunjuk.'));
+      draw();
+      return;
+    }
+    last = [from, to];
+    hint = null;
+    const san = s.chess.history().at(-1) ?? '';
+    feedback.replaceChildren(h('strong', {}, `✔ ${san}`), h('p', {}, r.note ?? ''));
+    if (s.finished) { finish(); return; }
+    scheduleOpponent();
+  }
+
+  function showHint() {
+    const e = session?.expected();
+    if (!e) return;
+    hint = [e.from];
+    feedback.replaceChildren(h('strong', {}, 'Petunjuk'), h('p', {}, 'Gerakkan buah yang disorot.'));
+    draw();
+  }
+
+  menu();
+  return { el: box, destroy: () => window.clearTimeout(timer) };
 }

@@ -7,3 +7,6 @@ public/engine/
 
 # pengaturan lokal Claude Code (agen proyek di .claude/agents tetap di-commit)
 .claude/settings.local.json
+
+test-results/
+playwright-report/
