@@ -4,7 +4,7 @@ import { listGames, saveGame } from '../../src/core/storage/games';
 import { replayList, replayScreen } from '../../src/modes/replay/replay';
 import * as download from '../../src/ui/download';
 import type { SavedGame } from '../../src/types';
-import { button, show } from './helpers';
+import { button, show, spyDialog } from './helpers';
 
 const game = (id: string, white = 'Ana B', black = 'Cici/D'): SavedGame => ({
   id, mode: 'pvp', createdAt: Date.now(), white, black, pgn: '1. e4 e5 2. Nf3 Nc6', result: '*',
@@ -29,10 +29,10 @@ describe('daftar partai', () => {
   it('menghapus partai setelah konfirmasi', () => {
     saveGame(game('a1'));
     const root = show(replayList);
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    spyDialog('confirm').mockReturnValue(false);
     (root.querySelector('[aria-label="Hapus"]') as HTMLElement).click();
     expect(listGames()).toHaveLength(1);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    spyDialog('confirm').mockReturnValue(true);
     (root.querySelector('[aria-label="Hapus"]') as HTMLElement).click();
     expect(listGames()).toHaveLength(0);
   });
@@ -41,7 +41,7 @@ describe('daftar partai', () => {
 describe('cadangan dari layar', () => {
   it('Cadangkan tanpa partai memberi tahu dan tidak mengunduh', () => {
     const root = show(replayList);
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const alertSpy = spyDialog('alert').mockImplementation(() => undefined);
     const dl = vi.spyOn(download, 'downloadText').mockImplementation(() => undefined);
     button(root, 'Cadangkan').click();
     expect(alertSpy).toHaveBeenCalled();
@@ -68,7 +68,7 @@ describe('cadangan dari layar', () => {
     localStorage.clear();
     root.querySelector('.item')?.remove();
 
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const alertSpy = spyDialog('alert').mockImplementation(() => undefined);
     const input = root.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File([body], 'cadangan.json', { type: 'application/json' });
     Object.defineProperty(input, 'files', { value: [file], configurable: true });
@@ -80,7 +80,7 @@ describe('cadangan dari layar', () => {
 
   it('berkas yang bukan cadangan ditolak tanpa mengubah data', async () => {
     const root = show(replayList);
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const alertSpy = spyDialog('alert').mockImplementation(() => undefined);
     const input = root.querySelector('input[type="file"]') as HTMLInputElement;
     Object.defineProperty(input, 'files', { value: [new File(['{"a":1}'], 'x.json')], configurable: true });
     input.dispatchEvent(new Event('change'));

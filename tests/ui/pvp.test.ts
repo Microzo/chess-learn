@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TIME_CONTROLS } from '../../src/core/game/clock';
 import { listGames } from '../../src/core/storage/games';
 import { pvpGame, pvpSetup } from '../../src/modes/pvp/pvp';
-import { button, move, occupied, show, text } from './helpers';
+import { button, move, occupied, show, spyDialog, text } from './helpers';
 
 const tc3 = TIME_CONTROLS.find((t) => t.id === '3+0')!;
 const clocks = (root: HTMLElement) => [...root.querySelectorAll('.clock')].map((c) => c.textContent);
@@ -48,7 +48,7 @@ describe('PvP tanpa jam', () => {
   it('menyerah memerlukan konfirmasi', () => {
     const root = show(() => pvpGame('A', 'B', false));
     move(root, 'e2', 'e4');
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirmSpy = spyDialog('confirm').mockReturnValue(false);
     button(root, 'Menyerah').click();
     expect(root.querySelector('.end')).toBeNull();
     confirmSpy.mockReturnValue(true);
@@ -106,7 +106,7 @@ describe('PvP dengan jam', () => {
   it('jam dijeda saat dialog menyerah terbuka', () => {
     const root = show(() => pvpGame('A', 'B', false, tc3));
     move(root, 'e2', 'e4');
-    vi.spyOn(window, 'confirm').mockImplementation(() => {
+    spyDialog('confirm').mockImplementation(() => {
       vi.setSystemTime(Date.now() + 20_000); // dialog terbuka 20 detik
       return false;
     });
@@ -119,7 +119,7 @@ describe('PvP dengan jam', () => {
   it('menyerah menghentikan jam', () => {
     const root = show(() => pvpGame('A', 'B', false, tc3));
     move(root, 'e2', 'e4');
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    spyDialog('confirm').mockReturnValue(true);
     button(root, 'Menyerah').click();
     const before = clocks(root);
     vi.advanceTimersByTime(5000);

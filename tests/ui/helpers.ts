@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { go, mount, type Screen } from '../../src/app/router';
 
 /** Pasang akar aplikasi baru dan tampilkan layar. */
@@ -39,4 +40,11 @@ export function button(root: ParentNode, label: string | RegExp): HTMLButtonElem
     typeof label === 'string' ? x.textContent?.includes(label) : label.test(x.textContent ?? ''));
   if (!b) throw new Error(`tombol "${label}" tidak ada`);
   return b;
+}
+
+/** happy-dom terbaru tidak lagi menyediakan confirm/alert: pastikan ada sebelum di-spy. */
+export function spyDialog(name: 'confirm' | 'alert') {
+  const w = window as unknown as Record<string, unknown>;
+  if (typeof w[name] !== 'function') w[name] = () => undefined;
+  return vi.spyOn(window, name);
 }
