@@ -86,7 +86,7 @@ export function puzzleScreen(id: string): Screen {
   function reset() {
     window.clearTimeout(timer);
     chess = build(pz);
-    step = 0; finished = false; usedHelp = false; busy = false; hintSq = null; last = null;
+    step = 0; finished = false; busy = false; hintSq = null; last = null; // usedHelp tetap sepanjang sesi
     say(`${side === 'w' ? 'Putih' : 'Hitam'} jalan. Temukan langkah terbaik.`, pz.theme);
     draw();
   }
@@ -133,6 +133,7 @@ export function puzzleScreen(id: string): Screen {
     timer = window.setTimeout(() => {
       const reply = chess.move(pz.solution[step]!);
       last = [reply.from, reply.to];
+      hintSq = null;
       step++;
       busy = false;
       if (step >= pz.solution.length || chess.isGameOver()) {

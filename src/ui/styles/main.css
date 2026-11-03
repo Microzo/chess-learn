@@ -115,6 +115,8 @@ small { color: var(--muted); }
 .badge.mistake, .dot-badge.mistake { background: var(--c-mistake); }
 .badge.blunder, .dot-badge.blunder { background: var(--c-blunder); color: #fff; }
 .card.cls-book { border-left-color: var(--c-book); }
+.card.cls-brilliant { border-left-color: var(--c-brilliant); }
+.card.cls-great { border-left-color: var(--c-great); }
 .card.cls-best { border-left-color: var(--c-best); }
 .card.cls-excellent { border-left-color: var(--c-excellent); }
 .card.cls-good { border-left-color: var(--c-good); }

@@ -1,8 +1,8 @@
 /** Kategori kualitas langkah (mirip chess.com). */
 export type MoveClass =
   | 'book'        // langkah teori opening
-  | 'brilliant'   // pengorbanan bagus yang tetap terbaik (TODO)
-  | 'great'       // satu-satunya langkah yang menjaga posisi (TODO)
+  | 'brilliant'   // langkah terbaik yang mengorbankan material tanpa merusak posisi
+  | 'great'       // langkah terbaik yang unik: alternatif terbaik kedua jauh lebih buruk
   | 'best'        // langkah pilihan engine
   | 'excellent'
   | 'good'
@@ -25,6 +25,8 @@ export interface EngineLine {
   /** principal variation (UCI) */
   pv: string[];
   depth: number;
+  /** langkah terbaik kedua (hanya bila dicari dengan MultiPV 2) */
+  second?: { uci: string; eval: Evaluation };
 }
 
 export interface OpeningInfo {

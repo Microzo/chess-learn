@@ -35,6 +35,35 @@ export function classify({ loss, playedUci, engineBestUci, isBook }: ClassifyInp
   return 'blunder';
 }
 
+export interface UpgradeInput {
+  cls: MoveClass;
+  /** peluang menang (0..100) pemain yang melangkah, sebelum dan sesudah langkah */
+  winBefore: number;
+  winAfter: number;
+  sacrifice: boolean;
+  /** selisih peluang menang antara langkah terbaik dan terbaik kedua; null bila tidak diketahui */
+  gapToSecond: number | null;
+  legalMoves: number;
+  givesMate: boolean;
+}
+
+/** Batas yang bisa di-tuning (persen peluang menang). */
+export const UPGRADE = { alreadyWinning: 90, minAfterForBrilliant: 50, onlyMoveGap: 20 } as const;
+
+/**
+ * Naikkan "Terbaik" menjadi "Brilian" atau "Hebat".
+ * Brilian: langkah terbaik yang mengorbankan material dan tidak merusak posisi.
+ * Hebat: langkah terbaik yang unik (alternatif terbaik kedua jauh lebih buruk).
+ * Tidak diberikan bila posisi sudah menang telak, langkahnya skakmat, atau tidak ada pilihan lain.
+ */
+export function upgradeClass(i: UpgradeInput): MoveClass {
+  if (i.cls !== 'best') return i.cls;
+  if (i.givesMate || i.legalMoves < 2 || i.winBefore >= UPGRADE.alreadyWinning) return i.cls;
+  if (i.sacrifice && i.winAfter >= UPGRADE.minAfterForBrilliant) return 'brilliant';
+  if (i.gapToSecond !== null && i.gapToSecond >= UPGRADE.onlyMoveGap) return 'great';
+  return i.cls;
+}
+
 /** Akurasi per langkah (rumus Lichess) -> rata-rata = akurasi pemain. */
 export function moveAccuracy(loss: number): number {
   const v = 103.1668 * Math.exp(-0.04354 * loss) - 3.1669;

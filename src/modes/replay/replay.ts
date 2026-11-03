@@ -11,7 +11,7 @@ import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/pane
 import { homeScreen } from '../../ui/screens/home';
 
 const MODE_LABEL = { learning: 'Belajar', pvp: 'PvP', import: 'Impor' } as const;
-const SHOWN: MoveClass[] = ['book', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
+const SHOWN: MoveClass[] = ['book', 'brilliant', 'great', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
 
 export function replayList(): Screen {
   const listBox = h('div', { class: 'list' });

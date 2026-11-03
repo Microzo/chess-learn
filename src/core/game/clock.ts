@@ -61,6 +61,24 @@ export class ChessClock {
     this.running = null;
   }
 
+  private paused: Side | null = null;
+
+  /** Jeda sementara (mis. saat dialog konfirmasi terbuka). */
+  pause(now: number) {
+    if (!this.running) return;
+    this.paused = this.running;
+    this.left[this.running] = this.remaining(this.running, now);
+    this.running = null;
+  }
+
+  /** Lanjutkan jam yang dijeda. */
+  resume(now: number) {
+    if (!this.paused) return;
+    this.running = this.paused;
+    this.paused = null;
+    this.since = now;
+  }
+
   /** Pihak yang waktunya habis, bila ada. */
   flagged(now: number): Side | null {
     if (this.running && this.remaining(this.running, now) <= 0) return this.running;

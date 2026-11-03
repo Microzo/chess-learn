@@ -1,8 +1,9 @@
 import { Chess } from 'chess.js';
 import type { Engine } from '../engine/engine';
 import type { EngineLine, MoveAnalysis, MoveClass, OpeningInfo } from '../../types';
-import { classify, moveAccuracy, winLoss } from './classifier';
+import { classify, moveAccuracy, upgradeClass, winLoss, winPercent } from './classifier';
 import { isBookPosition, openingAt } from './openings';
+import { isSacrifice, legalMoveCount } from './tactics';
 
 /** Nilai pengganti untuk posisi skakmat (mate 0 tidak punya tanda). */
 const MATE_CP = 10000;
@@ -63,6 +64,10 @@ function comment(cls: MoveClass, loss: number, bestSan: string, opening?: Openin
   switch (cls) {
     case 'book':
       return opening ? `Langkah teori: ${opening.name} (${opening.eco}).` : 'Langkah teori opening.';
+    case 'brilliant':
+      return 'Brilian! Pengorbanan material yang tepat dan tetap langkah terbaik.';
+    case 'great':
+      return 'Hebat! Langkah terbaik yang jelas unggul: menurut engine, alternatif terbaik berikutnya jauh lebih buruk.';
     case 'best':
       return 'Langkah terbaik, sama dengan pilihan engine.';
     case 'excellent':
@@ -82,6 +87,7 @@ function comment(cls: MoveClass, loss: number, bestSan: string, opening?: Openin
 
 export class Analyzer {
   private cache = new Map<string, EngineLine>();
+  private multiCache = new Map<string, EngineLine>();
 
   constructor(private engine: Engine, private depth = 12) {}
 
@@ -95,13 +101,24 @@ export class Analyzer {
     return line;
   }
 
-  async analyseMove(fenBefore: string, fenAfter: string, san: string, uci: string, ply: number): Promise<MoveAnalysis> {
+  /** Evaluasi dengan dua garis terbaik (MultiPV 2); dipakai untuk mendeteksi "langkah satu-satunya". */
+  async evaluateMulti(fen: string): Promise<EngineLine> {
+    const hit = this.multiCache.get(fen);
+    if (hit) return hit;
+    const line = await this.engine.analyse(fen, { depth: this.depth }, 2);
+    this.multiCache.set(fen, line);
+    return line;
+  }
+
+  /** `allowGreat=false` melewatkan pencarian MultiPV (mis. untuk langkah bot di mode belajar). */
+  async analyseMove(fenBefore: string, fenAfter: string, san: string, uci: string, ply: number, allowGreat = true): Promise<MoveAnalysis> {
     const before = await this.evaluate(fenBefore);
     const after = await this.evaluate(fenAfter);
     const mover = (fenBefore.split(' ')[1] ?? 'w') as 'w' | 'b';
     const loss = winLoss(before.eval, after.eval, mover);
     const isBook = isBookPosition(fenAfter);
-    const classification = classify({ loss, playedUci: uci, engineBestUci: before.bestMoveUci, isBook });
+    const base = classify({ loss, playedUci: uci, engineBestUci: before.bestMoveUci, isBook });
+    const classification = await this.refine(base, fenBefore, fenAfter, uci, mover, before, after, allowGreat);
     const opening = openingAt(fenAfter);
     const bestSan = uciToSan(fenBefore, before.bestMoveUci);
     return {
@@ -118,6 +135,29 @@ export class Analyzer {
       ...(opening ? { opening } : {}),
       comment: comment(classification, loss, uci === before.bestMoveUci ? '' : bestSan, opening),
     };
+  }
+
+  /** Naikkan "Terbaik" menjadi "Brilian"/"Hebat" bila memenuhi syarat. */
+  private async refine(
+    cls: MoveClass, fenBefore: string, fenAfter: string, uci: string, mover: 'w' | 'b',
+    before: EngineLine, after: EngineLine, allowGreat: boolean,
+  ): Promise<MoveClass> {
+    if (cls !== 'best') return cls;
+    const moverWin = (e: EngineLine['eval']) => (mover === 'w' ? winPercent(e) : 100 - winPercent(e));
+    const winBefore = moverWin(before.eval);
+    const winAfter = moverWin(after.eval);
+    const legalMoves = legalMoveCount(fenBefore);
+    const givesMate = new Chess(fenAfter).isCheckmate();
+    const sacrifice = isSacrifice(fenBefore, uci);
+    const isCapture = new Chess(fenBefore).moves({ verbose: true }).some((m) => m.from + m.to + (m.promotion ?? '') === uci && m.captured);
+    let gapToSecond: number | null = null;
+    // MultiPV hanya untuk langkah tenang yang berpotensi "Hebat" (hemat waktu; penangkapan/rebutan dilewati)
+    if (allowGreat && !sacrifice && !givesMate && !isCapture && legalMoves > 1 && winBefore < 90 && uci === before.bestMoveUci) {
+      const multi = await this.evaluateMulti(fenBefore);
+      // Stockfish tidak selalu sama antar nilai MultiPV: pakai hanya bila langkah ini juga terbaik di pencarian itu
+      if (multi.second && multi.bestMoveUci === uci) gapToSecond = moverWin(multi.eval) - moverWin(multi.second.eval);
+    }
+    return upgradeClass({ cls, winBefore, winAfter, sacrifice, gapToSecond, legalMoves, givesMate });
   }
 
   /** Analisa seluruh partai dari PGN (untuk replay / PvP). */

@@ -8,10 +8,11 @@
 6. **Analisa**: `analysis/analyzer` (eval sebelum/sesudah, `classifier`), `opening` (cocokkan urutan langkah ke `openings/eco.json`), komentar teks.
 7. **Learning mode**: setelah setiap langkah pemain, tampilkan panel analisa (label, selisih, langkah terbaik, opening); tombol "ulangi langkah".
 8. **Replay**: timeline evaluasi, daftar langkah berwarna, akurasi, analisa batch untuk partai PvP.
-9. **Belajar Strategi**: `modes/lessons` + `data/lessons.ts` (pelajaran, demo papan, glosarium); isi divalidasi `tests/lessons`. Ide lanjutan: Lucena/Philidor, lebih banyak opening, latihan taktik (puzzle) dengan umpan balik.
-10. **Polish**: tema, pengaturan, PWA/Tauri agar bisa di-install offline.
+9. **Belajar Strategi**: `modes/lessons` + `data/lessons.ts` (pelajaran, demo papan, glosarium); isi divalidasi `tests/lessons`. Sudah termasuk Lucena/Philidor, 14 opening, dan 12 puzzle taktik. Ide lanjutan: puzzle dari basis data besar, latihan oposisi, lebih banyak opening dan endgame.
+10. **Jam PvP** (`core/game/clock.ts`), **Latihan taktik** (`data/puzzles.ts`), label **Brilian/Hebat**: selesai.
+11. **Polish**: tema, pengaturan, PWA/Tauri agar bisa di-install offline.
 
 ## Catatan desain
 - Klasifikasi berbasis penurunan peluang menang (lihat `core/analysis/classifier.ts`), ambang bisa di-tuning.
-- `brilliant` dan `great` ditunda; butuh deteksi pengorbanan material dan "only move".
+- `brilliant` (pengorbanan material minimal 3 poin yang tetap terbaik) dan `great` (alternatif kedua turun >= 20% peluang menang lewat MultiPV 2) sudah ada; ambang di `classifier.ts` (`UPGRADE`).
 - Data opening: gunakan dataset ECO lisensi terbuka (mis. lichess-org/chess-openings), dikonversi oleh `scripts/build-openings`.

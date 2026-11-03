@@ -51,6 +51,7 @@ export function pvpGame(white: string, black: string, autoFlip: boolean, tc: Tim
   let timer: number | undefined;
 
   const board = new Board((from, to, promo) => {
+    tick(); // bendera yang jatuh di antara dua tick tidak boleh lolos dengan langkah
     if (isOver()) return;
     const mover = chess.turn();
     const m = chess.move({ from, to, ...(promo ? { promotion: promo } : {}) });
@@ -85,7 +86,7 @@ export function pvpGame(white: string, black: string, autoFlip: boolean, tc: Tim
       const label = (side: Side) => h('span', { class: 'clock-name' }, side === 'w' ? white : black);
       topBar.replaceChildren(label(top), clockEl[top]);
       bottomBar.replaceChildren(label(bottom), clockEl[bottom]);
-      if (over) clock.stop(Date.now());
+      if (over) { clock.stop(Date.now()); window.clearInterval(timer); }
       tick();
     }
     moves.render(chess.history(), [], chess.history().length);
@@ -139,13 +140,22 @@ export function pvpGame(white: string, black: string, autoFlip: boolean, tc: Tim
     persist();
     draw();
   };
+  /** Tanya konfirmasi dengan jam dijeda (confirm() memblokir, tetapi Date.now() terus berjalan). */
+  const ask = (text: string): boolean => {
+    tick();
+    if (isOver()) return false;
+    clock?.pause(Date.now());
+    const yes = confirm(text);
+    clock?.resume(Date.now());
+    return yes;
+  };
   const resign = () => {
-    if (isOver() || !confirm(`${name(chess.turn())} menyerah?`)) return;
+    if (isOver() || !ask(`${name(chess.turn())} menyerah?`)) return;
     ended = chess.turn() === 'w' ? '0-1' : '1-0';
     draw();
   };
   const draw_ = () => {
-    if (isOver() || !confirm('Kedua pemain sepakat remis?')) return;
+    if (isOver() || !ask('Kedua pemain sepakat remis?')) return;
     ended = '1/2-1/2';
     draw();
   };

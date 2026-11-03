@@ -45,17 +45,33 @@ export function toPgn(chess: Chess, white: string, black: string, result: Result
 }
 
 /**
- * Apakah `color` punya materi yang cukup untuk skakmat? Dipakai saat lawan kehabisan waktu:
- * bila tidak, hasilnya remis. Penyederhanaan: bidak/benteng/ratu atau dua buah ringan dianggap cukup.
+ * Apakah `color` bisa menang saat waktu lawan habis? Aturan FIDE: menang bila skakmat masih mungkin
+ * lewat rangkaian langkah legal apa pun (termasuk bantuan lawan). Hasilnya remis bila tidak mungkin:
+ * - tanpa bidak/benteng/ratu dan tanpa buah ringan;
+ * - melawan raja telanjang: satu buah ringan, atau gajah-gajah sewarna saja, tidak cukup.
+ * Dua kuda melawan raja telanjang dianggap cukup (skakmat tetap mungkin dengan bantuan).
  */
 export function hasMatingMaterial(chess: Chess, color: 'w' | 'b'): boolean {
-  let minors = 0;
-  for (const row of chess.board()) {
-    for (const cell of row) {
-      if (!cell || cell.color !== color) continue;
-      if (cell.type === 'p' || cell.type === 'r' || cell.type === 'q') return true;
-      if (cell.type === 'n' || cell.type === 'b') minors++;
-    }
-  }
-  return minors >= 2;
+  let knights = 0;
+  let bishops = 0;
+  const bishopColors = new Set<number>();
+  let loserOtherPieces = 0;
+  chess.board().forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (!cell) return;
+      if (cell.color !== color) {
+        if (cell.type !== 'k') loserOtherPieces++;
+        return;
+      }
+      if (cell.type === 'p' || cell.type === 'r' || cell.type === 'q') knights += 100; // cukup
+      if (cell.type === 'n') knights++;
+      if (cell.type === 'b') { bishops++; bishopColors.add((r + c) % 2); }
+    });
+  });
+  if (knights >= 100) return true;
+  const minors = knights + bishops;
+  if (minors === 0) return false;
+  if (loserOtherPieces > 0) return true; // lawan punya buah yang bisa "membantu" skakmat
+  if (minors >= 2) return !(knights === 0 && bishopColors.size === 1);
+  return false;
 }

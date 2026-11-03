@@ -151,7 +151,8 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
       const m = chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), ...(uci[4] ? { promotion: uci[4] } : {}) });
       last = [m.from, m.to];
       draw();
-      const a = await analyzer.analyseMove(fenBefore, m.after, m.san, uciOf(m), chess.history().length);
+      // langkah bot: lewati pencarian MultiPV untuk 'Hebat' agar balasan tidak tertunda
+      const a = await analyzer.analyseMove(fenBefore, m.after, m.san, uciOf(m), chess.history().length, false);
       if (destroyed) return;
       analyses.push(a);
       evalBar.set(a.evalAfter);

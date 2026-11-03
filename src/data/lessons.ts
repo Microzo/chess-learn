@@ -453,7 +453,7 @@ export const LESSONS: Lesson[] = [
     ],
     points: [
       'Putih membuka pusat dan mendapat inisiatif lebih dulu.',
-      'Hitam sering menukar kuda di c6 dan mengejar perkembangan cepat.',
+      'Putih sering menukar kuda di c6 (Nxc6) untuk merusak struktur bidak Hitam.',
       'Awasi taktik di sekitar e5 dan d5 saat bidak pusat saling bertemu.',
     ],
     demo: {
@@ -471,7 +471,7 @@ export const LESSONS: Lesson[] = [
         { san: 'bxc6', note: 'Hitam memakan kembali; bidak c ganda, tetapi Hitam mendapat kolom b semi-terbuka.', hint: ['c6', 'b8'] },
         { san: 'e5', note: 'Putih mengusir kuda f6 dan memperoleh ruang.', hint: ['e5', 'f6'] },
         { san: 'Qe7', note: 'Hitam menyerang e5 dengan ratu.', hint: ['e7', 'e5'] },
-        { san: 'Qe2', note: 'Putih menjaga e5 dan menyerang ratu Hitam.', hint: ['e2', 'e7'] },
+        { san: 'Qe2', note: 'Putih menjaga e5 dengan ratu dan menyiapkan rokade; ratu Hitam di e7 tertahan oleh bidak e5.', hint: ['e2', 'e5'] },
         { san: 'Nd5', note: 'Kuda Hitam menemukan kotak aktif di d5. Posisi tajam namun seimbang.', hint: ['d5'] },
       ],
     },
@@ -540,7 +540,7 @@ export const LESSONS: Lesson[] = [
         { san: 'cxd5', note: 'Putih membuka kolom c.', hint: ['d5'] },
         { san: 'Nxd5', note: 'Hitam mengambil kembali dengan kuda.', hint: ['d5'] },
         { san: 'Bg2', note: 'Gajah menekan Nd5 dan diagonal panjang.', hint: ['g2', 'd5'] },
-        { san: 'Nb6', note: 'Kuda mundur menghindari penukaran yang merugikan. Posisi seimbang.', hint: ['b6'] },
+        { san: 'Nb6', note: 'Kuda mundur dari d5 supaya tidak ditukar atau ditekan oleh Bg2. Posisi seimbang.', hint: ['b6'] },
       ],
     },
   },
@@ -1049,7 +1049,7 @@ export const LESSONS: Lesson[] = [
     title: 'Posisi Lucena',
     summary: 'Benteng dan bidak di baris ketujuh melawan benteng: cara menang yang harus dikuasai.',
     body: [
-      'Posisi Lucena muncul di endgame benteng dan bidak: Putih punya bidak di baris ketujuh dengan raja di depan bidaknya (di kotak promosi), sementara raja Hitam terpotong satu atau lebih kolom dari bidak. Itu kemenangan paksa bagi Putih, tetapi tekniknya harus tepat.',
+      'Posisi Lucena muncul di endgame benteng dan bidak: Putih punya bidak di baris ketujuh dengan raja di depan bidaknya (di kotak promosi), sementara raja Hitam terpotong satu atau lebih kolom dari bidak. Itu kemenangan paksa bagi Putih, tetapi tekniknya harus tepat. Catatan: ini berlaku untuk bidak selain bidak tepi (kolom a dan h); dengan bidak tepi hasilnya biasanya remis.',
       'Ide utamanya: benteng dipakai untuk memotong raja lawan dan melindungi raja sendiri dari skak sehingga raja bisa keluar dari depan bidak dan bidak bisa dipromosikan. Banyak partai yang tampak seri sebenarnya menang bila posisi ini bisa dicapai.',
       'Demo di bawah adalah satu jalur menang yang dipilih mesin (keunggulan sekitar +13). Ada banyak cara menang; pahami gagasannya: potong raja lawan, lindungi rajamu dari skak samping, lalu promosikan.',
     ],
@@ -1071,7 +1071,7 @@ export const LESSONS: Lesson[] = [
         { san: 'Ke6', note: 'Raja Hitam mengejar benteng.', hint: ['e6'] },
         { san: 'Ra5', note: 'Benteng pindah ke kolom a untuk melindungi raja Putih dari skak di sana.', hint: ['a5'] },
         { san: 'Rc6', note: 'Hitam bertahan di baris keenam.', hint: ['c6'] },
-        { san: 'Ka8', note: 'Raja keluar ke a8 di belakang perlindungan benteng a5.', hint: ['a8'] },
+        { san: 'Ka8', note: 'Raja tetap di baris terakhir, kini terlindung dari skak samping oleh benteng a5.', hint: ['a8'] },
         { san: 'Ra6+', note: 'Hitam memberi skak, tetapi benteng Putih menjaga kolom a.', hint: ['a6', 'a8'] },
         { san: 'Rxa6+', note: 'Putih memakan benteng Hitam dengan skak.', hint: ['a6'] },
         { san: 'Kd5', note: 'Raja Hitam tidak bisa menghentikan bidak.', hint: ['d5'] },
@@ -1090,9 +1090,9 @@ export const LESSONS: Lesson[] = [
       'Mesin menilai posisi demo di bawah hampir sama (−0,2 dari sudut pandang Hitam yang bertahan), artinya remis sangat mungkin dicapai. Pelajari posisi ini sebagai jaring pengaman saat kalah satu bidak di endgame benteng.',
     ],
     points: [
-      'Benteng di baris keenam, raja di depan bidak.',
+      'Benteng di baris keenam, raja bertahan dekat kotak promosi bidak.',
       'Saat bidak maju ke baris keenam, pindahkan benteng ke baris terakhir dan beri skak dari belakang.',
-      'Bidak yang belum melewati garis keenam tidak bisa dipromosikan dengan aman.',
+      'Selama bidak belum mencapai baris keenam, benteng bertahan tetap di baris keenam.',
     ],
     demo: {
       fen: '4k3/8/r7/3PK3/8/8/8/3R4 b - - 0 1',

@@ -57,6 +57,25 @@ describe('ChessClock', () => {
   });
 });
 
+describe('ChessClock pause/resume', () => {
+  it('waktu tidak berkurang selama dijeda', () => {
+    const c = new ChessClock(tc(60_000));
+    c.press('w', 0); // jam Hitam jalan
+    c.pause(10_000);
+    expect(c.active).toBeNull();
+    expect(c.remaining('b', 500_000)).toBe(50_000);
+    c.resume(500_000);
+    expect(c.active).toBe('b');
+    expect(c.remaining('b', 505_000)).toBe(45_000);
+  });
+  it('pause saat jam belum berjalan tidak berpengaruh', () => {
+    const c = new ChessClock(tc(60_000));
+    c.pause(1_000);
+    c.resume(2_000);
+    expect(c.active).toBeNull();
+  });
+});
+
 describe('formatClock', () => {
   it('menampilkan menit:detik dan desimal di bawah 10 detik', () => {
     expect(formatClock(600_000)).toBe('10:00');
@@ -72,6 +91,14 @@ describe('hasMatingMaterial', () => {
     expect(has('4k3/8/8/8/8/8/8/4K3 w - - 0 1', 'w')).toBe(false);
     expect(has('4k3/8/8/8/8/8/8/4KN2 w - - 0 1', 'w')).toBe(false);
     expect(has('4k3/8/8/8/8/8/8/4KB2 w - - 0 1', 'w')).toBe(false);
+  });
+  it('gajah-gajah sewarna melawan raja telanjang tidak cukup, beda warna cukup', () => {
+    expect(has('4k3/8/8/8/8/B7/8/2B1K3 w - - 0 1', 'w')).toBe(false); // c1 dan a3 sama-sama kotak gelap
+    expect(has('4k3/8/8/8/8/8/8/2BBK3 w - - 0 1', 'w')).toBe(true); // c1 gelap, d1 terang
+  });
+  it('satu buah ringan cukup bila lawan masih punya bidak atau buah (skakmat dengan bantuan masih mungkin)', () => {
+    expect(has('4k3/p7/8/8/8/8/8/4KN2 w - - 0 1', 'w')).toBe(true);
+    expect(has('4k3/n7/8/8/8/8/8/4KB2 w - - 0 1', 'w')).toBe(true);
   });
   it('bidak, benteng, ratu, atau dua buah ringan cukup', () => {
     expect(has('4k3/8/8/8/8/8/P7/4K3 w - - 0 1', 'w')).toBe(true);
