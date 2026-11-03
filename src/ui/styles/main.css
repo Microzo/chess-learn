@@ -147,3 +147,15 @@ details > * + * { margin-top: 8px; }
 summary { cursor: pointer; }
 
 .sound-toggle { align-self: flex-start; }
+
+/* belajar strategi */
+.lesson-cat { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.lesson-cat h3 { font-size: 1.05rem; }
+.lesson-text { display: flex; flex-direction: column; gap: 10px; line-height: 1.55; }
+.points { margin: 6px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; line-height: 1.45; }
+.demo { display: flex; flex-direction: column; gap: 8px; }
+.demo-note { min-height: 5.5em; border-left-color: var(--accent); }
+.demo-note p { line-height: 1.5; }
+.demo-counter { text-align: center; }
+.gloss p { color: var(--muted); line-height: 1.45; }
+.field input[type='search'] { min-height: 44px; }

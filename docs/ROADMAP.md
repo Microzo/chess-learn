@@ -8,7 +8,8 @@
 6. **Analisa**: `analysis/analyzer` (eval sebelum/sesudah, `classifier`), `opening` (cocokkan urutan langkah ke `openings/eco.json`), komentar teks.
 7. **Learning mode**: setelah setiap langkah pemain, tampilkan panel analisa (label, selisih, langkah terbaik, opening); tombol "ulangi langkah".
 8. **Replay**: timeline evaluasi, daftar langkah berwarna, akurasi, analisa batch untuk partai PvP.
-9. **Polish**: tema, pengaturan, PWA/Tauri agar bisa di-install offline.
+9. **Belajar Strategi**: `modes/lessons` + `data/lessons.ts` (pelajaran, demo papan, glosarium); isi divalidasi `tests/lessons`. Ide lanjutan: Lucena/Philidor, lebih banyak opening, latihan taktik (puzzle) dengan umpan balik.
+10. **Polish**: tema, pengaturan, PWA/Tauri agar bisa di-install offline.
 
 ## Catatan desain
 - Klasifikasi berbasis penurunan peluang menang (lihat `core/analysis/classifier.ts`), ambang bisa di-tuning.

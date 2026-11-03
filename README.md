@@ -5,6 +5,7 @@ Game catur offline ala chess.com: belajar lawan bot dengan analisa langkah live,
 ## Fitur
 | Mode | Deskripsi |
 |---|---|
+| **Belajar Strategi** | 33 pelajaran (dasar, 9 opening teruji, taktik, strategi middlegame, endgame, pola mat) dengan demo interaktif langkah demi langkah di papan, ditambah glosarium 45 istilah catur. Progres belajar tersimpan di perangkat. |
 | **Belajar vs Bot** | 8 level bot. Setiap langkah langsung diberi label (Teori, Terbaik, Sangat baik, Bagus, Kurang akurat, Kesalahan, Blunder), selisih evaluasi, dan langkah terbaik. Ada tombol Saran dan Ulangi. |
 | **Main berdua (PvP)** | Dua pemain di satu layar, papan bisa berputar otomatis, batal langkah, remis, menyerah. |
 | **Replay & Analisa** | Navigasi langkah (tombol/panah keyboard), grafik evaluasi, akurasi per pemain, ringkasan kategori, nama opening, papan alternatif terbaik. Bisa impor PGN. |
@@ -39,9 +40,9 @@ src/
 │  ├─ engine/     wrapper UCI Stockfish, level bot
 │  ├─ analysis/   classifier, deteksi opening, analyzer, akurasi
 │  └─ storage/    simpan partai
-├─ modes/       learning/  pvp/  replay/
+├─ modes/       learning/  lessons/  pvp/  replay/
 ├─ ui/          board/  panels/  screens/  styles/
-├─ data/        daftar opening (ECO)
+├─ data/        daftar opening (ECO), materi pelajaran dan glosarium
 └─ types/
 public/         engine/ (Stockfish), icons/, manifest, sw.js
 scripts/        copy-engine, make-icons

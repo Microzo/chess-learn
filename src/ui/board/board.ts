@@ -11,7 +11,7 @@ const FILES = 'abcdefgh';
 
 export interface BoardView {
   last?: [string, string] | null;
-  hint?: [string, string] | null;
+  hint?: string[] | null;
   flip?: boolean;
   /** pihak yang boleh digerakkan lewat klik; null = papan hanya tampilan */
   movable?: 'w' | 'b' | 'both' | null;
