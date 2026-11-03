@@ -70,3 +70,5 @@ Bidak: set SVG orisinal buatan proyek ini (CC0, lihat `public/pieces/original/LI
 - Berkas cadangan dan PGN yang diimpor divalidasi dan dibatasi ukurannya; teks selalu ditampilkan sebagai teks, bukan HTML.
 - Batasan: GitHub Pages tidak bisa mengirim header HTTP, jadi `frame-ancestors` (anti-clickjacking) tidak bisa diterapkan. Aplikasi tidak punya aksi sensitif sehingga dampaknya kecil.
 - Server dev hanya localhost; `--host` hanya untuk jaringan tepercaya. `npm audit` pada dependensi produksi bersih; temuan tersisa ada di perkakas pengembangan (vite 5 / vitest 2) dan tidak ikut terbit.
+
+Menguji situs yang sudah terbit (tanpa server lokal): `E2E_BASE_URL=https://microzo.github.io/chess-learn/ npm run test:e2e`.

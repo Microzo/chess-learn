@@ -4,7 +4,7 @@ import { clickMove, dragMove, LEGAL_PGN, menu, noHorizontalScroll, pieces, squar
 test.describe('layar utama dan navigasi', () => {
   test('menampilkan empat mode, tautan lisensi, dan tidak ada galat', async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('h1')).toContainText('Chess Learn');
     await expect(page.locator('.menu-item')).toHaveCount(4);
     const lic = page.getByRole('link', { name: 'Lisensi dan atribusi' });
@@ -18,7 +18,7 @@ test.describe('layar utama dan navigasi', () => {
 
   test('semua layar utama muat tanpa galat dan tanpa gulir horizontal', async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     for (const [title, heading] of [
       [/Belajar Strategi/, 'Belajar Strategi'],
       [/Belajar vs Bot/, 'Belajar vs Bot'],
@@ -38,7 +38,7 @@ test.describe('layar utama dan navigasi', () => {
 test.describe('PvP dengan mouse sungguhan', () => {
   test('klik dan seret memindahkan bidak; langkah salah tidak meninggalkan bidak macet', async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Main berdua/).click();
     await page.getByRole('button', { name: 'Mulai' }).click();
     await expect(pieces(page)).toHaveCount(32);
@@ -58,7 +58,7 @@ test.describe('PvP dengan mouse sungguhan', () => {
   });
 
   test('promosi bidak lewat dialog pilihan', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Main berdua/).click();
     await page.getByRole('button', { name: 'Mulai' }).click();
     // 1.a4 b5 2.axb5 a6 3.bxa6 Bb7 4.axb7 Nf6 lalu 5.bxa8: bidak putih menangkap benteng di baris terakhir
@@ -74,7 +74,7 @@ test.describe('PvP dengan mouse sungguhan', () => {
 
   test('jam: bendera jatuh mengakhiri partai dan langkah sesudahnya ditolak', async ({ page }) => {
     await page.clock.install();
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Main berdua/).click();
     await page.getByRole('button', { name: '3 menit' }).click();
     await page.getByRole('button', { name: 'Mulai' }).click();
@@ -90,7 +90,7 @@ test.describe('PvP dengan mouse sungguhan', () => {
 
 test.describe('puzzle dan latihan opening', () => {
   test('menyelesaikan puzzle skakmat dan progres bertahan setelah muat ulang', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Belajar Strategi/).click();
     await page.getByRole('button', { name: /Latihan taktik/ }).click();
     await page.getByRole('button', { name: /Skakmat dengan ratu/ }).click();
@@ -103,7 +103,7 @@ test.describe('puzzle dan latihan opening', () => {
 
   test('latihan opening: langkah teori diterima, lawan membalas, langkah salah ditolak', async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Belajar Strategi/).click();
     await page.getByRole('button', { name: /Scotch Game/ }).click();
     await page.locator('.practice summary').click();
@@ -123,7 +123,7 @@ test.describe('puzzle dan latihan opening', () => {
 test.describe('lawan bot dan analisa dengan engine asli', () => {
   test('bot membalas dan kartu analisa muncul', async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Belajar vs Bot/).click();
     await page.locator('.chip[data-v="1"]').click();
     await page.getByRole('button', { name: 'Mulai' }).click();
@@ -137,7 +137,7 @@ test.describe('lawan bot dan analisa dengan engine asli', () => {
 
   test("Legal's Mate: 5.Nxe5 berlabel Brilian, 7.Nd5# tidak dinaikkan", async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Replay/).click();
     await page.locator('details summary', { hasText: 'Impor PGN' }).click();
     await page.locator('textarea').fill(LEGAL_PGN);
@@ -162,7 +162,7 @@ test.describe('lawan bot dan analisa dengan engine asli', () => {
   });
 
   test('cadangan: unduh JSON lalu pulihkan setelah partai dihapus', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Replay/).click();
     await page.locator('details summary', { hasText: 'Impor PGN' }).click();
     await page.locator('textarea').fill(LEGAL_PGN);
@@ -197,7 +197,7 @@ test.describe('keamanan', () => {
     await page.addInitScript(() => {
       document.addEventListener('securitypolicyviolation', (e) => void (window as unknown as { __report: (v: string) => void }).__report(e.violatedDirective));
     });
-    await page.goto('/');
+    await page.goto('./');
     const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("object-src 'none'");
@@ -234,7 +234,7 @@ test.describe('keamanan', () => {
 
   test('PGN berisi HTML tidak dieksekusi dan ditampilkan sebagai teks', async ({ page }) => {
     const w = watchErrors(page);
-    await page.goto('/');
+    await page.goto('./');
     await menu(page, /Replay/).click();
     await page.locator('details summary', { hasText: 'Impor PGN' }).click();
     await page.locator('textarea').fill('[White "<img src=x onerror=window.__xss=1>"]\n[Black "<script>window.__xss=1</script>"]\n\n1. e4 e5 {<b>x</b>} *');

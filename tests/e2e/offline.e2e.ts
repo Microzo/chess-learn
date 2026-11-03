@@ -7,7 +7,7 @@ import { clickMove, menu, pieces, watchErrors } from './util';
  */
 test('berjalan offline setelah kunjungan pertama: pelajaran, puzzle, dan lawan bot', async ({ page, context }) => {
   const w = watchErrors(page);
-  await page.goto('/');
+  await page.goto('./');
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
@@ -42,7 +42,7 @@ test('berjalan offline setelah kunjungan pertama: pelajaran, puzzle, dan lawan b
   await expect(page.locator('.demo-note')).toContainText('Benar');
 
   // engine WASM offline: bot membalas
-  await page.goto('/');
+  await page.goto('./');
   await menu(page, /Belajar vs Bot/).click();
   await page.locator('.chip[data-v="1"]').click();
   await page.getByRole('button', { name: 'Mulai' }).click();
