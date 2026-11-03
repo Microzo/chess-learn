@@ -43,3 +43,19 @@ export function toPgn(chess: Chess, white: string, black: string, result: Result
   for (const m of chess.history()) c.move(m);
   return c.pgn();
 }
+
+/**
+ * Apakah `color` punya materi yang cukup untuk skakmat? Dipakai saat lawan kehabisan waktu:
+ * bila tidak, hasilnya remis. Penyederhanaan: bidak/benteng/ratu atau dua buah ringan dianggap cukup.
+ */
+export function hasMatingMaterial(chess: Chess, color: 'w' | 'b'): boolean {
+  let minors = 0;
+  for (const row of chess.board()) {
+    for (const cell of row) {
+      if (!cell || cell.color !== color) continue;
+      if (cell.type === 'p' || cell.type === 'r' || cell.type === 'q') return true;
+      if (cell.type === 'n' || cell.type === 'b') minors++;
+    }
+  }
+  return minors >= 2;
+}

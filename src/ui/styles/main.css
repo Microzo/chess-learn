@@ -160,3 +160,11 @@ summary { cursor: pointer; }
 .demo-counter { text-align: center; }
 .gloss p { color: var(--muted); line-height: 1.45; }
 .field input[type='search'] { min-height: 44px; }
+
+/* jam catur */
+.clockbar { display: flex; justify-content: space-between; align-items: center; width: var(--bs); max-width: 100%; margin: 0 auto; gap: 8px; }
+.clock-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.clock { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.3rem; padding: 4px 12px; border-radius: 8px; background: var(--panel2); color: var(--muted); min-width: 4.6em; text-align: center; }
+.clock.active { background: var(--panel); color: var(--text); outline: 2px solid var(--accent); }
+.clock.low { color: #ff9b94; }
+.clock.active.low { outline-color: var(--c-blunder); }
