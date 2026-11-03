@@ -117,8 +117,8 @@ export const LESSONS: Lesson[] = [
       'Rokade ke sisi berlawanan lawan memicu perlombaan serangan bidak.',
     ],
     demo: {
-      fen: 'r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1',
-      intro: 'Posisi hanya raja dan benteng. Lihat dua jenis rokade untuk kedua warna.',
+      fen: 'r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1',
+      intro: 'Raja dan benteng sudah siap (bidak sisanya hanya di barisan awal). Lihat dua jenis rokade untuk kedua warna.',
       hint: ['e1', 'a1', 'h1'],
       steps: [
         { san: 'O-O', note: 'Rokade pendek Putih: raja ke g1, benteng h1 ke f1.', hint: ['g1', 'f1'] },
@@ -502,7 +502,7 @@ export const LESSONS: Lesson[] = [
     body: [
       'Garpu terjadi saat satu bidak menyerang dua (atau lebih) bidak lawan di saat yang sama, dan lawan hanya bisa menyelamatkan satu. Kuda adalah ahli garpu karena lompatannya tidak bisa dihalangi dan menyerang dalam pola khusus.',
       'Garpu paling kuat adalah garpu dengan skak: raja wajib bergerak, sehingga target lain tidak bisa diselamatkan. Garpu kuda pada raja dan benteng atau ratu sering menentukan hasil partai.',
-      'Cara mencegah: perhatikan kotak yang bisa dijangkau kuda lawan dua langkah ke depan, terutama kotak yang menyerang raja dan bidak berharga sekaligus.',
+      'Sebelum menggarpu, periksa dua hal: kotak garpu tidak bisa dimakan balik, dan bidak yang menggarpu (terutama kuda) tidak langsung terjebak setelah memakan target. Cara mencegah garpu lawan: perhatikan kotak yang bisa dijangkau kuda lawan dua langkah ke depan, terutama kotak yang menyerang raja dan buah berharga sekaligus.',
     ],
     points: [
       'Kuda sering melakukan garpu pada raja + benteng atau ratu.',
@@ -510,13 +510,13 @@ export const LESSONS: Lesson[] = [
       'Pastikan kotak garpu tidak bisa dimakan raja lawan (misalnya didukung bidak atau buah lain).',
     ],
     demo: {
-      fen: 'r3k3/8/1P6/1N6/8/8/8/4K3 w - - 0 1',
-      intro: 'Kuda Putih b5 dan bidak b6 melawan raja dan benteng Hitam. Apa yang bisa dilakukan?',
-      hint: ['b5', 'e8', 'a8'],
+      fen: '3k3r/8/8/6N1/8/8/PPP5/4K3 w - - 0 1',
+      intro: 'Kuda Putih di g5. Raja Hitam di d8 dan bentengnya di h8 berada pada jarak lompatan kuda dari f7.',
+      hint: ['g5', 'f7', 'd8', 'h8'],
       steps: [
-        { san: 'Nc7+', note: 'Garpu! Kuda mengancam raja e8 dan benteng a8 sekaligus. Bidak b6 menjaga kuda sehingga raja tidak bisa memakannya.', hint: ['c7', 'e8', 'a8'] },
-        { san: 'Kf7', note: 'Raja wajib bergerak dari skak.', hint: ['f7'] },
-        { san: 'Nxa8', note: 'Benteng jatuh. Garpu memenangkan material tanpa pengorbanan.', hint: ['a8'] },
+        { san: 'Nf7+', note: 'Garpu! Dari f7 kuda menyerang raja d8 dan benteng h8 sekaligus, dan tidak ada buah Hitam yang bisa memakannya. Mesin menilai ini langkah terbaik (keunggulan sekitar +9).', hint: ['f7', 'd8', 'h8'] },
+        { san: 'Ke7', note: 'Raja harus bergerak. Ia memang menyerang kuda f7, tetapi giliran Putih sekarang.', hint: ['e7'] },
+        { san: 'Nxh8', note: 'Benteng jatuh. Kuda memang berada di pojok, tetapi masih punya jalan keluar (g6), sehingga kemenangan material ini benar-benar bertahan.', hint: ['h8', 'g6'] },
       ],
     },
   },
@@ -719,13 +719,12 @@ export const LESSONS: Lesson[] = [
       'Jangan menyerahkan satu-satunya kolom terbuka tanpa kompensasi.',
     ],
     demo: {
-      fen: '6k1/pp3ppp/8/8/8/8/PP3PPP/3R2K1 w - - 0 1',
-      intro: 'Benteng Putih menguasai kolom d yang terbuka. Hitam tidak punya benteng.',
+      fen: 'r5k1/pp3p1p/6p1/8/8/8/PP3PPP/3R2K1 w - - 0 1',
+      intro: 'Satu benteng tiap pihak. Putih menguasai kolom d yang terbuka dan bisa masuk ke baris ketujuh.',
       hint: ['d1', 'd7', 'b7', 'f7'],
       steps: [
-        { san: 'Rd7', note: 'Benteng masuk ke baris ketujuh. Ia menyerang b7 (tidak terjaga) dan f7 (dijaga raja).', hint: ['d7', 'b7', 'f7'] },
-        { san: 'b6', note: 'Hitam menyelamatkan b7, tetapi kini bidak a7 yang tidak terjaga ikut terbuka bagi benteng.', hint: ['b6', 'a7'] },
-        { san: 'Rxa7', note: 'Putih memakan bidak dan benteng tetap mendominasi baris ketujuh sambil menjepit raja.', hint: ['a7'] },
+        { san: 'Rd7', note: 'Benteng masuk ke baris ketujuh dan menyerang b7 (dan f7, yang dijaga raja). Mesin memilih langkah ini sebagai yang terbaik.', hint: ['d7', 'b7', 'f7'] },
+        { san: 'Rb8', note: 'Hitam membela secara pasif: benteng terikat menjaga b7 dan raja menjaga f7. Keunggulan Putih hanya sekitar +0,3, jadi ini tekanan nyata, bukan kemenangan otomatis. Benteng di baris ketujuh tetap sulit diusir.', hint: ['b8', 'b7'] },
       ],
     },
   },

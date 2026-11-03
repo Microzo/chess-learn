@@ -70,7 +70,8 @@ small { color: var(--muted); }
 .sq.light { background: var(--light); }
 .sq.dark { background: var(--dark); }
 .sq.last::before { content: ''; position: absolute; inset: 0; background: rgba(255, 235, 59, .38); }
-.sq.hint::before { content: ''; position: absolute; inset: 0; background: rgba(33, 150, 243, .5); }
+.sq.hint::before { content: ''; position: absolute; inset: 0; background: rgba(33, 150, 243, .32); box-shadow: inset 0 0 0 3px rgba(33, 150, 243, .85); }
+.sq.last.hint::before { background: linear-gradient(rgba(33, 150, 243, .32), rgba(33, 150, 243, .32)), rgba(255, 235, 59, .38); }
 .sq.sel::before { content: ''; position: absolute; inset: 0; background: rgba(20, 200, 90, .5); }
 .sq.check::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255, 0, 0, .75), rgba(255, 0, 0, 0) 70%); }
 .sq.dot::after { content: ''; position: absolute; top: 36%; left: 36%; width: 28%; height: 28%; border-radius: 50%; background: rgba(0, 0, 0, .25); }

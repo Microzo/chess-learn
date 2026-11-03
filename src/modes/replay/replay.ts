@@ -90,7 +90,13 @@ export function replayScreen(id: string): Screen {
     const a = analysis();
     const cur: MoveAnalysis | undefined = idx > 0 ? a[idx - 1] : undefined;
     const alt = showBest && cur && cur.engineBest.uci && cur.engineBest.uci !== '(none)';
-    const chess = new Chess(alt ? cur!.fenBefore : fens[idx]!);
+    // dibangun dari posisi awal agar riwayat tersedia: papan bisa menganimasikan dan berbunyi saat maju satu langkah
+    let chess: Chess;
+    if (alt) chess = new Chess(cur!.fenBefore);
+    else {
+      chess = new Chess(fens[0]!);
+      for (let i = 0; i < idx; i++) chess.move(sans[i]!);
+    }
     const m = idx > 0 ? verbose[idx - 1] : undefined;
     board.set(chess, {
       flip,
