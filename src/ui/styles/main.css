@@ -197,3 +197,34 @@ summary { cursor: pointer; }
 
 .legal { font-size: 12px; text-align: center; margin-top: 16px; }
 .legal a { color: inherit; text-decoration: underline; }
+
+/* tata letak layar permainan: papan + info */
+.game-main, .game-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+/* fokus papan ketik yang jelas */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sq:focus-visible { outline-offset: -3px; }
+
+/* perpindahan layar halus (dimatikan bila pengguna meminta gerak minimal) */
+@keyframes screen-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  .screen { animation: screen-in .18s ease-out; }
+}
+
+/* layar lebar: papan di kiri (menempel saat menggulir), kartu dan daftar langkah di kanan */
+@media (min-width: 900px) and (min-height: 560px) {
+  .screen.game {
+    --bs: clamp(380px, calc(100vh - 150px), 680px);
+    width: min(100%, 1180px);
+    display: grid;
+    grid-template-columns: var(--bs) minmax(320px, 1fr);
+    column-gap: 24px;
+    row-gap: 8px;
+    align-items: start;
+    padding-top: 20px;
+  }
+  .screen.game > .bar { grid-column: 1 / -1; }
+  .game-main { position: sticky; top: 12px; }
+  .menu-item { padding: 18px; }
+  .home h1 { font-size: 2.4rem; }
+}

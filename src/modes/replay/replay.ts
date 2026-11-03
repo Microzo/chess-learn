@@ -7,12 +7,15 @@ import { deleteGame, exportBackup, getGame, importBackup, listGames, newId, save
 import type { Evaluation, MoveAnalysis, MoveClass, SavedGame } from '../../types';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
+import { gameLayout } from '../../ui/layout';
 import { copyText, downloadText, localDate, safeFilename } from '../../ui/download';
 import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 
 const MODE_LABEL = { learning: 'Belajar', pvp: 'PvP', import: 'Impor' } as const;
 const MAX_PGN = 200_000;
+/** Header PGN memakai "?" untuk nama yang tidak diketahui. */
+const named = (v: string | null | undefined, fallback: string) => (v && v.trim() && v.trim() !== '?' ? v : fallback);
 const SHOWN: MoveClass[] = ['book', 'brilliant', 'great', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
 
 export function replayList(): Screen {
@@ -44,7 +47,7 @@ export function replayList(): Screen {
       const id = newId();
       saveGame({
         id, mode: 'import', createdAt: Date.now(),
-        white: hd['White'] || 'Putih', black: hd['Black'] || 'Hitam',
+        white: named(hd['White'], 'Putih'), black: named(hd['Black'], 'Hitam'),
         pgn: c.pgn(), result: (hd['Result'] as SavedGame['result']) || '*',
       });
       go(() => replayScreen(id));
@@ -208,12 +211,12 @@ export function replayScreen(id: string): Screen {
   };
   document.addEventListener('keydown', onKey);
 
-  const el = h('div', { class: 'screen game' },
+  const el = gameLayout(
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', onclick: () => go(replayList) }, '←'),
       h('h2', {}, `${game.white} vs ${game.black}`)),
-    opening, evalBar.el, board.el,
-    h('div', { class: 'row nav' },
+    [opening, evalBar.el, board.el],
+    [h('div', { class: 'row nav' },
       h('button', { class: 'btn', onclick: () => step(-999) }, '⏮'),
       h('button', { class: 'btn', onclick: () => step(-1) }, '◀'),
       h('button', { class: 'btn', onclick: () => step(1) }, '▶'),
@@ -223,7 +226,7 @@ export function replayScreen(id: string): Screen {
     cardBox, graphBox, summary, analyseBtn, progress, moves.el,
     h('div', { class: 'row' },
       copyBtn,
-      h('button', { class: 'btn', onclick: () => downloadText(`${safeFilename(`${game.white}-vs-${game.black}`)}.pgn`, game.pgn, 'application/x-chess-pgn') }, '⬇ Unduh PGN')),
+      h('button', { class: 'btn', onclick: () => downloadText(`${safeFilename(`${game.white}-vs-${game.black}`)}.pgn`, game.pgn, 'application/x-chess-pgn') }, '⬇ Unduh PGN'))],
   );
 
   renderSummary();

@@ -3,6 +3,7 @@ import { go, type Screen } from '../../app/router';
 import { PUZZLES, type Puzzle } from '../../data/puzzles';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
+import { gameLayout } from '../../ui/layout';
 import { lessonList } from './lessons';
 
 const SOLVED_KEY = 'chess-learn:puzzles-solved';
@@ -173,11 +174,12 @@ export function puzzleScreen(id: string): Screen {
     draw();
   }
 
-  const el = h('div', { class: 'screen game' },
+  const el = gameLayout(
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(puzzleList) }, '←'),
       h('h2', {}, pz.title)),
-    board.el, feedback, actions,
+    [board.el],
+    [feedback, actions],
   );
   reset();
   return { el, destroy: () => window.clearTimeout(timer) };

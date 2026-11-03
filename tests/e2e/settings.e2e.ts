@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { clickMove, LEGAL_PGN, menu, pieces, watchErrors } from './util';
+import { clickMove, LEGAL_PGN, menu, noHorizontalScroll, pieces, watchErrors } from './util';
 
 const bg = (page: import('@playwright/test').Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
@@ -90,5 +90,36 @@ test.describe('bar dominasi', () => {
     // posisi awal: seimbang
     await page.getByRole('button', { name: '⏮' }).click();
     await expect(bar).toHaveAttribute('data-lead', 'even');
+  });
+});
+
+test.describe('tata letak responsif', () => {
+  test('layar lebar: papan utuh terlihat tanpa menggulir dan info di sampingnya', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.goto('./');
+    await menu(page, /Main berdua/).click();
+    await page.getByRole('button', { name: /Mulai/ }).click();
+    const board = (await page.locator('.board').boundingBox())!;
+    const side = (await page.locator('.game-side').boundingBox())!;
+    expect(board.y + board.height, 'papan terpotong di bawah layar').toBeLessThanOrEqual(768);
+    expect(side.x, 'info harus di kanan papan').toBeGreaterThanOrEqual(board.x + board.width);
+    expect(board.width).toBeGreaterThan(450);
+  });
+
+  test('HP: info di bawah papan dan tanpa gulir horizontal', async ({ page }) => {
+    await page.goto('./');
+    await menu(page, /Main berdua/).click();
+    await page.getByRole('button', { name: /Mulai/ }).click();
+    const board = (await page.locator('.board').boundingBox())!;
+    const side = (await page.locator('.game-side').boundingBox())!;
+    expect(side.y).toBeGreaterThanOrEqual(board.y + board.height);
+    await noHorizontalScroll(page);
+  });
+
+  test('papan ketik: Tab menampilkan cincin fokus yang terlihat', async ({ page }) => {
+    await page.goto('./');
+    await page.keyboard.press('Tab');
+    const outline = await page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle);
+    expect(outline).toBe('solid');
   });
 });

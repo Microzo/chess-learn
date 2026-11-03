@@ -5,6 +5,7 @@ import { hasMatingMaterial, statusOf, toPgn, type Result } from '../../core/game
 import { newId, saveGame } from '../../core/storage/games';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
+import { gameLayout } from '../../ui/layout';
 import { MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 import { replayScreen } from '../replay/replay';
@@ -160,17 +161,17 @@ export function pvpGame(white: string, black: string, autoFlip: boolean, tc: Tim
     draw();
   };
 
-  const el = h('div', { class: 'screen game' },
+  const el = gameLayout(
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'),
       h('h2', {}, `${white} vs ${black}`)),
-    topBar, board.el, bottomBar, status,
-    h('div', { class: 'row' },
+    [topBar, board.el, bottomBar, status],
+    [h('div', { class: 'row' },
       clock ? null : h('button', { class: 'btn', onclick: undo }, '↶ Batal langkah'),
       h('button', { class: 'btn', onclick: draw_ }, '½ Remis'),
       h('button', { class: 'btn danger', onclick: resign }, '🏳 Menyerah'),
       autoFlip ? null : h('button', { class: 'btn', onclick: () => { manualFlip = !manualFlip; draw(); } }, '⟲ Putar')),
-    endBox, moves.el,
+    endBox, moves.el],
   );
   draw();
   if (clock) timer = window.setInterval(tick, 100);

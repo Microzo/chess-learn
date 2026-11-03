@@ -8,6 +8,7 @@ import { newId, saveGame } from '../../core/storage/games';
 import type { MoveAnalysis } from '../../types';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
+import { gameLayout } from '../../ui/layout';
 import { analysisCard, badge, EvalBar, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 import { replayScreen } from '../replay/replay';
@@ -212,13 +213,12 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
     cardBox.replaceChildren(h('div', { class: 'card cls-blunder' }, `Error: ${(e as Error).message}`));
   }
 
-  const el = h('div', { class: 'screen game' },
+  const el = gameLayout(
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'),
       h('h2', {}, `Belajar · ${botName}`)),
-    evalBar.el, board.el, status, cardBox, botLine,
-    h('div', { class: 'row' }, hintBtn, undoBtn, resignBtn),
-    endBox, moves.el,
+    [evalBar.el, board.el, status],
+    [cardBox, botLine, h('div', { class: 'row' }, hintBtn, undoBtn, resignBtn), endBox, moves.el],
   );
 
   (async () => {
