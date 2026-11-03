@@ -1,5 +1,6 @@
 // Service worker: cache-first agar aplikasi jalan offline.
-// __PRECACHE__ dan __VERSION__ diisi saat `npm run build` (lihat vite.config.ts).
+// Daftar precache dan versi diisi saat `npm run build` (lihat vite.config.ts).
+// Jangan tulis nama placeholder di komentar: replace() hanya mengganti kemunculan pertama.
 const VERSION = '__VERSION__';
 const CACHE = 'chess-learn-' + VERSION;
 const PRECACHE = __PRECACHE__;

@@ -1,0 +1,7 @@
+Bidak catur orisinal Chess Learn (12 berkas SVG), digambar untuk proyek ini.
+
+Dedikasi domain publik (CC0 1.0 Universal):
+Pembuat melepaskan seluruh hak cipta atas karya ini seluas yang diizinkan hukum.
+Anda bebas menyalin, mengubah, dan memakainya, termasuk untuk tujuan komersial,
+tanpa izin dan tanpa atribusi.
+https://creativecommons.org/publicdomain/zero/1.0/

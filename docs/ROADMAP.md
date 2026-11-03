@@ -1,7 +1,7 @@
 # Roadmap
 
 1. **Fondasi**: `npm install`, halaman papan kosong, `core/game` (chess.js: langkah legal, status, PGN).
-2. **Papan UI**: `ui/board` drag/klik, highlight langkah legal, promosi, suara.
+2. **Papan UI**: `ui/board` drag/klik, highlight langkah legal, promosi, suara (sudah: drag, klik, animasi geser, suara sintetis).
 3. **PvP offline**: `modes/pvp` + jam catur, undo, resign/draw, simpan ke storage.
 4. **Engine**: `core/engine` memuat Stockfish WASM di worker; API `analyse(fen, depth)` mengembalikan `EngineLine`.
 5. **Bot**: level 1..10 lewat `Skill Level` / `UCI_Elo` + depth terbatas.

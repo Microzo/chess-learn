@@ -53,6 +53,8 @@ Evaluasi engine diubah ke peluang menang; kategori ditentukan dari penurunan pel
 
 ## Belum ada / rencana
 - Kategori Brilian dan Hebat (butuh deteksi pengorbanan material dan "satu-satunya langkah").
-- Jam catur untuk PvP; drag-and-drop bidak (saat ini klik asal lalu klik tujuan).
+- Jam catur untuk PvP.
 - Daftar opening baru ±80 jalur; bisa diganti dataset ECO lengkap.
-- Gambar bidak masih glyph Unicode; bisa diganti SVG di `public/pieces`.
+
+## Kredit
+Bidak: set SVG orisinal buatan proyek ini (CC0, lihat `public/pieces/original/LICENSE.txt`). Suara disintesis lewat WebAudio.
