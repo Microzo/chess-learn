@@ -4,7 +4,7 @@ import { lessonList } from '../../modes/lessons/lessons';
 import { pvpSetup } from '../../modes/pvp/pvp';
 import { replayList } from '../../modes/replay/replay';
 import { h } from '../dom';
-import { isMuted, play, setMuted } from '../sound';
+import { settingsScreen } from './settings';
 
 export function homeScreen(): Screen {
   const menu = (icon: string, title: string, sub: string, fn: () => void) =>
@@ -12,10 +12,7 @@ export function homeScreen(): Screen {
       h('span', { class: 'mi-icon' }, icon),
       h('span', {}, h('strong', {}, title), h('small', {}, sub)));
 
-  const snd = h('button', { class: 'btn ghost sound-toggle' });
-  const paintSnd = () => { snd.textContent = isMuted() ? '🔇 Suara mati' : '🔊 Suara nyala'; };
-  snd.onclick = () => { setMuted(!isMuted()); paintSnd(); play('move'); };
-  paintSnd();
+  const settings = h('button', { class: 'btn ghost settings-link', onclick: () => go(settingsScreen) }, '⚙ Pengaturan');
 
   const el = h('div', { class: 'screen home' },
     h('h1', {}, '♞ Chess Learn'),
@@ -24,7 +21,7 @@ export function homeScreen(): Screen {
     menu('🎓', 'Belajar vs Bot', 'Analisa langsung tiap langkah', () => go(learningSetup)),
     menu('👥', 'Main berdua', 'Dua pemain, satu perangkat', () => go(pvpSetup)),
     menu('📼', 'Replay & Analisa', 'Putar ulang, grafik, akurasi, opening', () => go(replayList)),
-    snd,
+    settings,
     h('p', { class: 'muted legal' },
       'Perangkat lunak bebas (GPL-3.0). Memakai Stockfish dan chess.js. ',
       h('a', { href: `${import.meta.env.BASE_URL}licenses/README.txt`, target: '_blank', rel: 'noopener' }, 'Lisensi dan atribusi'),

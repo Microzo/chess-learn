@@ -26,8 +26,16 @@ export class EvalBar {
   }
 
   set(e: Evaluation) {
-    this.fill.style.width = `${winPercent(e)}%`;
+    const pct = winPercent(e);
+    this.fill.style.width = `${pct}%`;
     this.label.textContent = formatEval(e);
+    // angka diletakkan di sisi pemain yang unggul agar selalu terbaca
+    const lead = pct > 52 ? 'w' : pct < 48 ? 'b' : 'even';
+    this.el.dataset['lead'] = lead;
+    const who = lead === 'w' ? 'Putih unggul' : lead === 'b' ? 'Hitam unggul' : 'Seimbang';
+    this.el.title = `${who} (${formatEval(e)})`;
+    this.el.setAttribute('role', 'img');
+    this.el.setAttribute('aria-label', `Bar dominasi: ${who}, ${formatEval(e)}, peluang menang Putih ${pct.toFixed(0)} persen`);
   }
 }
 

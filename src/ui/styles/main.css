@@ -88,9 +88,10 @@ small { color: var(--muted); }
 .promo-btn:hover { background: #fff; }
 
 /* bar evaluasi */
-.eval-bar { position: relative; height: 22px; background: #1d1c1a; border-radius: 4px; overflow: hidden; width: var(--bs); max-width: 100%; margin: 0 auto; }
+.eval-bar { position: relative; height: 24px; background: #1d1c1a; border: 1px solid #6b6964; border-radius: 4px; overflow: hidden; width: var(--bs); max-width: 100%; margin: 0 auto; }
 .eval-fill { height: 100%; background: #f2f2f2; transition: width .35s ease; }
-.eval-label { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: .75rem; font-weight: 700; color: #fff; mix-blend-mode: difference; }
+.eval-label { position: absolute; top: 50%; transform: translateY(-50%); font-size: .75rem; font-weight: 700; right: 6px; color: #fff; }
+.eval-bar[data-lead='w'] .eval-label { right: auto; left: 6px; color: #1d1c1a; }
 
 .status { text-align: center; font-weight: 600; min-height: 1.4em; }
 .opening { text-align: center; color: var(--c-book); font-weight: 600; min-height: 1.2em; }
@@ -129,7 +130,7 @@ small { color: var(--muted); }
 .mrow { display: grid; grid-template-columns: 2.4em 1fr 1fr; align-items: center; }
 .mno { color: var(--muted); padding-left: 6px; font-size: .85rem; }
 .mv { background: transparent; border: 0; text-align: left; padding: 8px 6px; border-radius: 6px; cursor: pointer; }
-.mv.cur { background: #4d6b2f; }
+.mv.cur { background: #4d6b2f; color: #fff; }
 
 /* replay */
 .graph { width: 100%; height: 70px; background: #1d1c1a; border-radius: 6px; cursor: pointer; display: block; }
@@ -149,7 +150,30 @@ details { background: var(--panel); border-radius: 8px; padding: 10px; display: 
 details > * + * { margin-top: 8px; }
 summary { cursor: pointer; }
 
-.sound-toggle { align-self: flex-start; }
+.settings-link { align-self: flex-start; }
+
+/* pengaturan */
+.settings { display: flex; flex-direction: column; gap: 12px; }
+.settings .card { display: flex; flex-direction: column; gap: 12px; }
+.setting-row { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.setting-row input { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--accent); }
+.setting-row span { display: flex; flex-direction: column; gap: 2px; }
+.swatch { display: inline-block; width: 22px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; border: 1px solid rgba(0, 0, 0, .35); }
+.vol-row { align-items: center; flex-wrap: nowrap; }
+.vol { flex: 1; accent-color: var(--accent); min-height: 32px; }
+
+/* tema terang */
+:root[data-theme='terang'] { --bg: #f1efea; --panel: #ffffff; --panel2: #e8e5df; --text: #23211e; --muted: #67645f; --accent: #4f8a1e; }
+:root[data-theme='terang'] .btn { border-color: #c9c5bd; }
+:root[data-theme='terang'] .btn:hover:not(:disabled) { background: #dcd8d0; }
+:root[data-theme='terang'] .btn.primary { color: #fff; }
+:root[data-theme='terang'] .btn.danger { color: #b3261e; }
+:root[data-theme='terang'] .menu-item, :root[data-theme='terang'] .chip { border-color: #cfcbc3; }
+:root[data-theme='terang'] .chip.on { background: #dcebc8; }
+
+/* opsi tampilan */
+:root[data-coords='off'] .coord { display: none; }
+:root[data-evalbar='off'] .eval-bar { display: none; }
 
 /* belajar strategi */
 .lesson-cat { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }

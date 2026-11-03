@@ -17,13 +17,10 @@ describe('layar utama', () => {
     root.querySelectorAll('a').forEach((a) => expect(a.getAttribute('rel')).toContain('noopener'));
   });
 
-  it('tombol suara beralih dan tersimpan', () => {
+  it('tombol Pengaturan membuka layar pengaturan', () => {
     const root = show(homeScreen);
-    const snd = root.querySelector('.sound-toggle') as HTMLElement;
-    const before = snd.textContent;
-    snd.click();
-    expect(snd.textContent).not.toBe(before);
-    expect(localStorage.getItem('chesslearn.muted')).toBe('1');
+    (root.querySelector('.settings-link') as HTMLElement).click();
+    expect(root.querySelector('h2')!.textContent).toBe('Pengaturan');
   });
 
   it('menu Belajar Strategi membuka daftar pelajaran', () => {

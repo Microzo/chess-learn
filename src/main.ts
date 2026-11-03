@@ -1,7 +1,9 @@
 import './ui/styles/main.css';
 import { go, mount } from './app/router';
+import { applySettings } from './core/settings';
 import { homeScreen } from './ui/screens/home';
 
+applySettings();
 mount(document.getElementById('app')!);
 go(homeScreen);
 
