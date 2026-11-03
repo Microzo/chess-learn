@@ -25,7 +25,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run build && npx vite preview --port 4173 --strictPort',
     url: 'http://localhost:4173/',
-    reuseExistingServer: true,
+    reuseExistingServer: false, // selalu bangun ulang agar yang diuji adalah kode terbaru
     timeout: 180_000,
   },
 });

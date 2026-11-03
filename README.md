@@ -18,7 +18,7 @@ TypeScript, Vite, chess.js (aturan), Stockfish 17.1 WASM lite single-thread di W
 ## Menjalankan
 ```
 npm install        # sekaligus menyalin engine ke public/engine
-npm run dev        # http://localhost:5173 (juga bisa dari HP, lihat bawah)
+npm run dev        # http://localhost:5173 (hanya komputer ini; untuk HP lihat bawah)
 npm test          # tes unit + tes layar (vitest, DOM tiruan), tanpa browser
 npm run test:e2e   # tes end-to-end di browser sungguhan + engine asli + offline (Playwright)
 npm run build      # hasil di dist/
@@ -26,7 +26,7 @@ npm run preview    # uji build produksi di http://localhost:4173
 ```
 
 ### Main di HP (satu jaringan Wi-Fi dengan laptop)
-1. `npm run dev` (atau `npm run build && npm run preview`).
+1. `npm run dev -- --host` (atau `npm run build && npm run preview -- --host`). Ini membuka server ke seluruh jaringan Wi-Fi; pakai hanya di jaringan tepercaya dan matikan setelah selesai (server dev Vite bukan untuk jaringan publik).
 2. Buka `http://<IP-laptop>:5173` di browser HP (cek IP dengan `ipconfig`). Izinkan Node.js di Windows Firewall bila diminta.
 3. Ini hanya jalan selama laptop menyala. Untuk offline sungguhan di HP, hosting `dist/` di HTTPS (lihat di bawah).
 
@@ -64,3 +64,9 @@ Bidak: set SVG orisinal buatan proyek ini (CC0, lihat `public/pieces/original/LI
 ## Pengujian
 - `npm test`: tes logika (analisa, jam, pelajaran, puzzle, penyimpanan) dan tes layar dengan DOM tiruan (papan, puzzle, latihan opening, PvP berjam, cadangan, layar utama).
 - `npm run test:e2e`: membangun aplikasi, menjalankannya dengan `vite preview`, lalu menguji di browser sungguhan: klik dan seret mouse, jam, Stockfish asli (bot, label Brilian), unduh/pulihkan cadangan, dan **mode offline** (service worker + engine WASM dari cache). Lokal memakai Microsoft Edge yang terpasang; di mesin lain jalankan `npx playwright install chromium` lalu `E2E_CHANNEL=chromium npm run test:e2e`.
+
+## Keamanan
+- Tanpa backend, akun, atau panggilan jaringan; semua data di perangkat. Build produksi memasang Content-Security-Policy (hanya origin sendiri, tanpa inline script maupun `eval`).
+- Berkas cadangan dan PGN yang diimpor divalidasi dan dibatasi ukurannya; teks selalu ditampilkan sebagai teks, bukan HTML.
+- Batasan: GitHub Pages tidak bisa mengirim header HTTP, jadi `frame-ancestors` (anti-clickjacking) tidak bisa diterapkan. Aplikasi tidak punya aksi sensitif sehingga dampaknya kecil.
+- Server dev hanya localhost; `--host` hanya untuk jaringan tepercaya. `npm audit` pada dependensi produksi bersih; temuan tersisa ada di perkakas pengembangan (vite 5 / vitest 2) dan tidak ikut terbit.

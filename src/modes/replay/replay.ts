@@ -12,6 +12,7 @@ import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/pane
 import { homeScreen } from '../../ui/screens/home';
 
 const MODE_LABEL = { learning: 'Belajar', pvp: 'PvP', import: 'Impor' } as const;
+const MAX_PGN = 200_000;
 const SHOWN: MoveClass[] = ['book', 'brilliant', 'great', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
 
 export function replayList(): Screen {
@@ -36,6 +37,7 @@ export function replayList(): Screen {
   const importPgn = () => {
     try {
       const c = new Chess();
+      if (pgnBox.value.length > MAX_PGN) throw new Error('terlalu besar');
       c.loadPgn(pgnBox.value);
       if (c.history().length === 0) throw new Error('kosong');
       const hd = c.getHeaders();
@@ -51,7 +53,7 @@ export function replayList(): Screen {
     }
   };
 
-  const fileIn = h('input', { type: 'file', accept: '.json,application/json', style: 'display:none' }) as HTMLInputElement;
+  const fileIn = h('input', { type: 'file', accept: '.json,application/json', hidden: true }) as HTMLInputElement;
   fileIn.onchange = async () => {
     const f = fileIn.files?.[0];
     fileIn.value = '';
@@ -83,7 +85,11 @@ export function replayScreen(id: string): Screen {
   if (!game) return replayList();
 
   const parser = new Chess();
-  parser.loadPgn(game.pgn);
+  try {
+    parser.loadPgn(game.pgn);
+  } catch {
+    return replayList(); // PGN tersimpan rusak: jangan membuat layar error
+  }
   const verbose = parser.history({ verbose: true });
   const sans = verbose.map((m) => m.san);
   const fens = [verbose[0]?.before ?? new Chess().fen(), ...verbose.map((m) => m.after)];

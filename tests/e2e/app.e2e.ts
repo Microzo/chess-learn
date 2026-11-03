@@ -189,3 +189,59 @@ test.describe('lawan bot dan analisa dengan engine asli', () => {
     await expect(page.locator('.item')).toHaveCount(1);
   });
 });
+
+test.describe('keamanan', () => {
+  test('CSP aktif: memblokir skrip inline & sumber luar, tetapi fitur tetap jalan', async ({ page }) => {
+    const violations: string[] = [];
+    await page.exposeFunction('__report', (v: string) => violations.push(v));
+    await page.addInitScript(() => {
+      document.addEventListener('securitypolicyviolation', (e) => void (window as unknown as { __report: (v: string) => void }).__report(e.violatedDirective));
+    });
+    await page.goto('/');
+    const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).not.toContain('unsafe-inline');
+    expect(csp).not.toMatch(/(?<!wasm-)unsafe-eval/); // eval JavaScript dilarang; hanya WebAssembly yang diizinkan
+    expect(csp).toContain("'wasm-unsafe-eval'");
+
+    // suntikan skrip inline harus diblokir (tidak mengubah window)
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.textContent = 'window.__pwned = true';
+      document.head.append(s);
+    });
+    expect(await page.evaluate(() => (window as unknown as { __pwned?: boolean }).__pwned)).toBeUndefined();
+    // sumber gambar luar diblokir
+    await page.evaluate(() => {
+      const i = new Image();
+      i.src = 'https://example.com/x.png';
+      document.body.append(i);
+    });
+    await expect.poll(() => violations.join(',')).toContain('script-src');
+    await expect.poll(() => violations.join(',')).toContain('img-src');
+    violations.length = 0;
+
+    // alur utama (engine WASM + worker + unduhan) tidak boleh memicu pelanggaran CSP
+    await menu(page, /Belajar vs Bot/).click();
+    await page.locator('.chip[data-v="1"]').click();
+    await page.getByRole('button', { name: 'Mulai' }).click();
+    await expect(page.locator('.status')).toContainText('Giliran', { timeout: 30_000 });
+    await clickMove(page, 'e2', 'e4');
+    await expect(page.locator('.botline')).toContainText('Bot', { timeout: 30_000 });
+    expect(violations).toEqual([]);
+  });
+
+  test('PGN berisi HTML tidak dieksekusi dan ditampilkan sebagai teks', async ({ page }) => {
+    const w = watchErrors(page);
+    await page.goto('/');
+    await menu(page, /Replay/).click();
+    await page.locator('details summary', { hasText: 'Impor PGN' }).click();
+    await page.locator('textarea').fill('[White "<img src=x onerror=window.__xss=1>"]\n[Black "<script>window.__xss=1</script>"]\n\n1. e4 e5 {<b>x</b>} *');
+    await page.getByRole('button', { name: 'Impor', exact: true }).click();
+    await expect(page.locator('h2')).toContainText('<img src=x');
+    expect(await page.evaluate(() => (window as unknown as { __xss?: number }).__xss)).toBeUndefined();
+    await expect(page.locator('h2 img, h2 script')).toHaveCount(0);
+    w.assertNoErrors();
+  });
+});
