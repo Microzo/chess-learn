@@ -170,3 +170,6 @@ summary { cursor: pointer; }
 .clock.active { background: var(--panel); color: var(--text); outline: 2px solid var(--accent); }
 .clock.low { color: #ff9b94; }
 .clock.active.low { outline-color: var(--c-blunder); }
+
+.legal { font-size: 12px; text-align: center; margin-top: 16px; }
+.legal a { color: inherit; text-decoration: underline; }
