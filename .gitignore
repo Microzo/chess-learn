@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# engine disalin otomatis dari node_modules (npm install / npm run build)
+public/engine/
+*.log
+.DS_Store
