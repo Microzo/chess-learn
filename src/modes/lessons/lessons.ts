@@ -4,6 +4,8 @@ import { CATEGORY_LABEL, CATEGORY_ORDER, GLOSSARY, LESSONS, type Demo, type Less
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
 import { homeScreen } from '../../ui/screens/home';
+import { puzzleList, solvedCount } from './puzzles';
+import { PUZZLES } from '../../data/puzzles';
 
 const DONE_KEY = 'chess-learn:lessons-done';
 
@@ -52,7 +54,9 @@ export function lessonList(): Screen {
       h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(homeScreen) }, '←'),
       h('h2', {}, 'Belajar Strategi')),
     h('p', { class: 'muted' }, `${done.size} dari ${total} pelajaran selesai. Semua materi bisa dibaca offline.`),
-    h('button', { class: 'btn', onclick: () => go(glossaryScreen) }, '📖 Glosarium istilah catur'),
+    h('div', { class: 'row' },
+      h('button', { class: 'btn primary', onclick: () => go(puzzleList) }, `🧩 Latihan taktik (${solvedCount()}/${PUZZLES.length})`),
+      h('button', { class: 'btn', onclick: () => go(glossaryScreen) }, '📖 Glosarium')),
     ...sections,
   );
   return { el };
