@@ -1,8 +1,17 @@
 import { go, type Screen } from '../../app/router';
-import { BOARD_THEMES, THEMES, getSettings, resetSettings, updateSettings, type BoardTheme, type Theme } from '../../core/settings';
+import { tr } from '../../core/i18n';
+import { BOARD_THEMES, LANGS, getSettings, resetSettings, updateSettings, type BoardTheme, type Lang, type Theme } from '../../core/settings';
 import { h } from '../dom';
 import { play } from '../sound';
 import { homeScreen } from './home';
+
+const themeName = (t: Theme) => (t === 'gelap' ? tr('Dark', 'Gelap') : tr('Light', 'Terang'));
+const boardName = (b: BoardTheme) => ({
+  hijau: tr('Green', 'Hijau'),
+  cokelat: tr('Brown', 'Cokelat'),
+  biru: tr('Blue', 'Biru'),
+  abu: tr('Grey', 'Abu-abu'),
+})[b];
 
 export function settingsScreen(): Screen {
   const box = h('div', { class: 'settings' });
@@ -30,7 +39,7 @@ export function settingsScreen(): Screen {
 
   const render = () => {
     const s = getSettings();
-    const vol = h('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(s.volume * 100)), 'aria-label': 'Volume suara', class: 'vol' }) as HTMLInputElement;
+    const vol = h('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(s.volume * 100)), 'aria-label': tr('Sound volume', 'Volume suara'), class: 'vol' }) as HTMLInputElement;
     vol.value = String(Math.round(s.volume * 100));
     vol.oninput = () => { updateSettings({ volume: Number(vol.value) / 100 }); volLabel.textContent = `${vol.value}%`; };
     vol.onchange = () => play('move'); // contoh suara setelah geser selesai
@@ -38,25 +47,31 @@ export function settingsScreen(): Screen {
 
     box.replaceChildren(
       h('section', { class: 'card' },
-        h('h3', {}, 'Tampilan'),
-        h('div', { class: 'field' }, h('small', {}, 'Tema'),
-          chips(Object.entries(THEMES) as [Theme, string][], s.theme, (v) => { updateSettings({ theme: v }); render(); })),
-        h('div', { class: 'field' }, h('small', {}, 'Warna papan'),
-          chips(Object.entries(BOARD_THEMES).map(([k, v]) => [k, v.name] as [BoardTheme, string]), s.board,
-            (v) => { updateSettings({ board: v }); render(); }, (v) => swatch(v))),
-        toggle('set-coords', 'Koordinat papan', 'Huruf a–h dan angka 1–8 di tepi papan', s.coords, (v) => updateSettings({ coords: v })),
-        toggle('set-eval', 'Bar dominasi', 'Menunjukkan siapa yang unggul saat Belajar vs Bot dan Replay', s.evalBar, (v) => updateSettings({ evalBar: v }))),
+        h('h3', {}, 'Language / Bahasa'),
+        chips(Object.entries(LANGS) as [Lang, string][], s.lang, (v) => {
+          updateSettings({ lang: v });
+          go(settingsScreen); // bangun ulang layar ini dalam bahasa baru
+        })),
       h('section', { class: 'card' },
-        h('h3', {}, 'Suara'),
-        toggle('set-sound', 'Efek suara', 'Bunyi saat bidak bergerak, memakan, skak, dan partai berakhir', !s.muted, (v) => { updateSettings({ muted: !v }); if (v) play('move'); }),
-        h('div', { class: 'field' }, h('small', {}, 'Volume'), h('div', { class: 'row vol-row' }, vol, volLabel))),
-      h('button', { class: 'btn danger', onclick: () => { resetSettings(); render(); } }, 'Kembalikan ke bawaan'),
+        h('h3', {}, tr('Appearance', 'Tampilan')),
+        h('div', { class: 'field' }, h('small', {}, tr('Theme', 'Tema')),
+          chips((['gelap', 'terang'] as Theme[]).map((t) => [t, themeName(t)] as [Theme, string]), s.theme, (v) => { updateSettings({ theme: v }); render(); })),
+        h('div', { class: 'field' }, h('small', {}, tr('Board colours', 'Warna papan')),
+          chips(Object.keys(BOARD_THEMES).map((k) => [k, boardName(k as BoardTheme)] as [BoardTheme, string]), s.board,
+            (v) => { updateSettings({ board: v }); render(); }, (v) => swatch(v))),
+        toggle('set-coords', tr('Board coordinates', 'Koordinat papan'), tr('Letters a–h and numbers 1–8 around the board', 'Huruf a–h dan angka 1–8 di tepi papan'), s.coords, (v) => updateSettings({ coords: v })),
+        toggle('set-eval', tr('Advantage bar', 'Bar dominasi'), tr('Shows who is ahead in Learn vs Bot and Replay', 'Menunjukkan siapa yang unggul saat Belajar vs Bot dan Replay'), s.evalBar, (v) => updateSettings({ evalBar: v }))),
+      h('section', { class: 'card' },
+        h('h3', {}, tr('Sound', 'Suara')),
+        toggle('set-sound', tr('Sound effects', 'Efek suara'), tr('Plays when pieces move or capture, on check, and when the game ends', 'Bunyi saat bidak bergerak, memakan, skak, dan partai berakhir'), !s.muted, (v) => { updateSettings({ muted: !v }); if (v) play('move'); }),
+        h('div', { class: 'field' }, h('small', {}, tr('Volume', 'Volume')), h('div', { class: 'row vol-row' }, vol, volLabel))),
+      h('button', { class: 'btn danger', onclick: () => { resetSettings(); go(settingsScreen); } }, tr('Reset to defaults', 'Kembalikan ke bawaan')),
     );
   };
   render();
 
   const el = h('div', { class: 'screen' },
-    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(homeScreen) }, '←'), h('h2', {}, 'Pengaturan')),
+    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(homeScreen) }, '←'), h('h2', {}, tr('Settings', 'Pengaturan'))),
     box,
   );
   return { el };

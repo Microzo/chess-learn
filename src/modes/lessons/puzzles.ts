@@ -2,6 +2,8 @@ import { Chess } from 'chess.js';
 import { go, type Screen } from '../../app/router';
 import { PUZZLES, type Puzzle } from '../../data/puzzles';
 import { Board } from '../../ui/board/board';
+import { tr } from '../../core/i18n';
+import { puzzleView } from '../../data/localize';
 import { h } from '../../ui/dom';
 import { gameLayout } from '../../ui/layout';
 import { lessonList } from './lessons';
@@ -30,10 +32,12 @@ export function puzzleList(): Screen {
   const solved = loadSolved();
   const el = h('div', { class: 'screen' },
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(lessonList) }, '←'),
-      h('h2', {}, 'Latihan taktik')),
-    h('p', { class: 'muted' }, `${PUZZLES.filter((p) => solved.has(p.id)).length} dari ${PUZZLES.length} puzzle terpecahkan. Temukan langkah terbaik; tiap puzzle punya petunjuk.`),
-    h('div', { class: 'list' }, ...PUZZLES.map((p) =>
+      h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(lessonList) }, '←'),
+      h('h2', {}, tr('Tactics practice', 'Latihan taktik'))),
+    h('p', { class: 'muted' }, tr(
+      `${PUZZLES.filter((p) => solved.has(p.id)).length} of ${PUZZLES.length} puzzles solved. Find the best move; every puzzle has a hint.`,
+      `${PUZZLES.filter((p) => solved.has(p.id)).length} dari ${PUZZLES.length} puzzle terpecahkan. Temukan langkah terbaik; tiap puzzle punya petunjuk.`)),
+    h('div', { class: 'list' }, ...PUZZLES.map(puzzleView).map((p) =>
       h('div', { class: 'item' },
         h('button', { class: 'item-main', onclick: () => go(() => puzzleScreen(p.id)) },
           h('strong', {}, `${solved.has(p.id) ? '✔ ' : ''}${p.title}`),
@@ -49,10 +53,11 @@ function build(p: Puzzle): Chess {
 }
 
 export function puzzleScreen(id: string): Screen {
-  const puzzle = PUZZLES.find((p) => p.id === id);
-  if (!puzzle) return puzzleList();
-  const pz: Puzzle = puzzle;
-  const nextPuzzle: Puzzle | undefined = PUZZLES[PUZZLES.indexOf(pz) + 1];
+  const base = PUZZLES.find((p) => p.id === id);
+  if (!base) return puzzleList();
+  const pz: Puzzle = puzzleView(base);
+  const nextBase: Puzzle | undefined = PUZZLES[PUZZLES.indexOf(base) + 1];
+  const nextPuzzle: Puzzle | undefined = nextBase ? puzzleView(nextBase) : undefined;
   const solved = loadSolved();
 
   let chess = build(pz);
@@ -67,10 +72,10 @@ export function puzzleScreen(id: string): Screen {
 
   const board = new Board((from, to, promo) => attempt(from, to, promo));
   const feedback = h('div', { class: 'card demo-note' });
-  const hintBtn = h('button', { class: 'btn', onclick: () => showHint() }, '💡 Petunjuk');
-  const answerBtn = h('button', { class: 'btn', onclick: () => showAnswer() }, '👁 Lihat jawaban');
-  const retryBtn = h('button', { class: 'btn', onclick: () => reset() }, '⟲ Ulangi');
-  const nextBtn = h('button', { class: 'btn primary', onclick: () => nextPuzzle && go(() => puzzleScreen(nextPuzzle.id)) }, 'Puzzle berikutnya →');
+  const hintBtn = h('button', { class: 'btn', onclick: () => showHint() }, tr('💡 Hint', '💡 Petunjuk'));
+  const answerBtn = h('button', { class: 'btn', onclick: () => showAnswer() }, tr('👁 Show answer', '👁 Lihat jawaban'));
+  const retryBtn = h('button', { class: 'btn', onclick: () => reset() }, tr('⟲ Retry', '⟲ Ulangi'));
+  const nextBtn = h('button', { class: 'btn primary', onclick: () => nextPuzzle && go(() => puzzleScreen(nextPuzzle.id)) }, tr('Next puzzle →', 'Puzzle berikutnya →'));
   const actions = h('div', { class: 'row' });
 
   function say(text: string, strong?: string) {
@@ -88,7 +93,7 @@ export function puzzleScreen(id: string): Screen {
     window.clearTimeout(timer);
     chess = build(pz);
     step = 0; finished = false; busy = false; hintSq = null; last = null; // usedHelp tetap sepanjang sesi
-    say(`${side === 'w' ? 'Putih' : 'Hitam'} jalan. Temukan langkah terbaik.`, pz.theme);
+    say(tr(`${side === 'w' ? 'White' : 'Black'} to move. Find the best move.`, `${side === 'w' ? 'Putih' : 'Hitam'} jalan. Temukan langkah terbaik.`), pz.theme);
     draw();
   }
 
@@ -96,7 +101,7 @@ export function puzzleScreen(id: string): Screen {
     finished = true;
     hintSq = null;
     if (!usedHelp) { solved.add(pz.id); saveSolved(solved); }
-    say(`${msg} ${pz.explanation}`, usedHelp ? 'Selesai (dengan bantuan)' : '✔ Benar!');
+    say(`${msg} ${pz.explanation}`, usedHelp ? tr('Done (with help)', 'Selesai (dengan bantuan)') : tr('✔ Correct!', '✔ Benar!'));
     draw();
   }
 
@@ -115,7 +120,7 @@ export function puzzleScreen(id: string): Screen {
     if (!ok) {
       chess.undo();
       hintSq = null;
-      say('Bukan langkah terbaik di posisi ini. Coba lagi, atau minta petunjuk.', 'Belum tepat');
+      say(tr('Not the best move in this position. Try again, or ask for a hint.', 'Bukan langkah terbaik di posisi ini. Coba lagi, atau minta petunjuk.'), tr('Not quite', 'Belum tepat'));
       draw();
       return;
     }
@@ -124,12 +129,12 @@ export function puzzleScreen(id: string): Screen {
     step++;
     if (isAlt || chess.isGameOver() || step >= pz.solution.length) {
       draw();
-      finish(isAlt ? 'Langkah alternatif ini juga menang.' : 'Puzzle selesai.');
+      finish(isAlt ? tr('This alternative move also wins.', 'Langkah alternatif ini juga menang.') : tr('Puzzle complete.', 'Puzzle selesai.'));
       return;
     }
     // balasan lawan (sudah ditentukan dalam solusi)
     busy = true;
-    say('Bagus! Lawan membalas…', 'Benar');
+    say(tr('Nice! The opponent replies…', 'Bagus! Lawan membalas…'), tr('Correct', 'Benar'));
     draw();
     timer = window.setTimeout(() => {
       const reply = chess.move(pz.solution[step]!);
@@ -139,9 +144,9 @@ export function puzzleScreen(id: string): Screen {
       busy = false;
       if (step >= pz.solution.length || chess.isGameOver()) {
         draw();
-        finish('Puzzle selesai.');
+        finish(tr('Puzzle complete.', 'Puzzle selesai.'));
       } else {
-        say('Lanjutkan: temukan langkah berikutnya.', 'Benar');
+        say(tr('Keep going: find the next move.', 'Lanjutkan: temukan langkah berikutnya.'), tr('Correct', 'Benar'));
         draw();
       }
     }, 450);
@@ -151,7 +156,7 @@ export function puzzleScreen(id: string): Screen {
     usedHelp = true;
     const from = firstSquare();
     hintSq = from ? [from] : null;
-    say(pz.hint, 'Petunjuk');
+    say(pz.hint, tr('Hint', 'Petunjuk'));
     draw();
   }
 
@@ -168,7 +173,7 @@ export function puzzleScreen(id: string): Screen {
   function showAnswer() {
     usedHelp = true;
     const rest = pz.solution.slice(step);
-    say(`Jawaban: ${rest.join('  ')}`, 'Jawaban');
+    say(tr(`Answer: ${rest.join('  ')}`, `Jawaban: ${rest.join('  ')}`), tr('Answer', 'Jawaban'));
     const from = firstSquare();
     hintSq = from ? [from] : null;
     draw();
@@ -176,7 +181,7 @@ export function puzzleScreen(id: string): Screen {
 
   const el = gameLayout(
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(puzzleList) }, '←'),
+      h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(puzzleList) }, '←'),
       h('h2', {}, pz.title)),
     [board.el],
     [feedback, actions],

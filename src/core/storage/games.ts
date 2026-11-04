@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js';
 import type { SavedGame } from '../../types';
+import { tr } from '../i18n';
 
 const KEY = 'chesslearn.games.v1';
 
@@ -91,10 +92,10 @@ function sanitize(x: unknown): SavedGame | null {
  * dipulihkan; melempar galat bila berkas bukan cadangan Chess Learn.
  */
 export function importBackup(text: string): number {
-  if (text.length > MAX_FILE) throw new Error('Berkas terlalu besar.');
+  if (text.length > MAX_FILE) throw new Error(tr('File is too large.', 'Berkas terlalu besar.'));
   let data: { format?: string; games?: unknown[] };
-  try { data = JSON.parse(text); } catch { throw new Error('Berkas bukan JSON yang valid.'); }
-  if (data.format !== BACKUP_FORMAT || !Array.isArray(data.games)) throw new Error('Bukan berkas cadangan Chess Learn.');
+  try { data = JSON.parse(text); } catch { throw new Error(tr('The file is not valid JSON.', 'Berkas bukan JSON yang valid.')); }
+  if (data.format !== BACKUP_FORMAT || !Array.isArray(data.games)) throw new Error(tr('Not a Chess Learn backup file.', 'Bukan berkas cadangan Chess Learn.'));
   const incoming = data.games.slice(0, MAX_GAMES).map(sanitize).filter((x): x is SavedGame => x !== null);
   const all = readAll();
   for (const g of incoming) {

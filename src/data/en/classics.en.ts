@@ -1,0 +1,178 @@
+/**
+ * Terjemahan Inggris partai legendaris (kunci = id partai). `notes` mengikuti urutan dan jumlah yang sama
+ * dengan `notes` di src/data/classics.ts (kunci langkahnya dipakai dari sana); tes memastikan jumlahnya sama.
+ */
+export interface ClassicText {
+  title: string;
+  white: string;
+  black: string;
+  event: string;
+  opening: string;
+  summary: string;
+  learn: string[];
+  notes: string[];
+}
+
+export const CLASSICS_EN: Record<string, ClassicText> = {
+  opera: {
+    title: 'The Opera Game',
+    white: 'Paul Morphy',
+    black: 'Duke of Brunswick & Count Isouard',
+    event: 'Paris, 1858 (played in a box at the opera)',
+    opening: 'Philidor Defence',
+    summary: 'The clearest example of rapid development, control of the centre, and an attack on a king that has not castled.',
+    learn: [
+      'Morphy develops his minor pieces quickly, while Black trades pieces and spends moves on the b- and c-pawns.',
+      'Pins: the bishop on g5 pins the knight on f6 to the queen, and the bishop on b5 pins the knight on d7 to the king.',
+      'Sacrifice material to open lines towards a king that is not yet safe.',
+      'The final checkmate uses just one rook and one bishop.',
+    ],
+    notes: [
+      'The most common opening move: it claims the centre and opens lines for the queen and bishop.',
+      "Black's bishop pins the knight on f3 to the queen on d1. Pins like this will be a theme throughout the game.",
+      "White opens the centre. Black eventually trades the bishop for the knight on f3, and Morphy gets to develop his queen for free.",
+      "The bishop eyes f7, Black's weakest point (defended only by the king).",
+      'A double attack on b7 and f7. Black answers 7...Qe7 to keep f7 safe.',
+      'The bishop pins the knight on f6 to the queen on e7. That knight cannot move freely.',
+      "A knight sacrifice: it opens the b- and c-files towards Black's king, which has not castled.",
+      'Check! Black must block with the knight on d7, which is now pinned by the bishop on b5.',
+      'Queenside castling: it develops and brings the rook to the d-file with the threat of Rxd7.',
+      'An exchange sacrifice (rook for knight) to destroy the defenders of the king.',
+      'A queen sacrifice! Black must reply with the knight, which fully opens the d-file.',
+      'Checkmate. The bishop on g5 covers e7, so the Black king has nowhere to run.',
+    ],
+  },
+  immortal: {
+    title: 'The Immortal Game',
+    white: 'Adolf Anderssen',
+    black: 'Lionel Kieseritzky',
+    event: 'London, 1851 (a casual game between tournament rounds)',
+    opening: "King's Gambit, Bishop's Gambit",
+    summary: 'Anderssen sacrifices a bishop, both rooks and his queen, then delivers checkmate with three minor pieces.',
+    learn: [
+      'A gambit: giving up a pawn for the initiative and quicker development.',
+      'Time (tempo) can be worth more than material, especially while the enemy king is not yet safe.',
+      'A chain of sacrifices is sound when every move is forcing and ends in checkmate.',
+      'The romantic style of the nineteenth century: direct attacks on the king.',
+    ],
+    notes: [
+      "The King's Gambit: White offers the f-pawn to open the f-file and take control of the centre.",
+      "Black's queen gives an early check. White can no longer castle once the king has moved.",
+      'The king walks and loses the right to castle. Anderssen accepts that as long as his pieces develop smoothly.',
+      "Black's counter-gambit: offering the b-pawn to deflect White's bishop.",
+      'Anderssen accepts the counter-gambit.',
+      'The rook opens the g-file so the pawns can advance, ignoring the exposed king.',
+      "The knight jumps into d5, ignoring Black's threats.",
+      'A quiet move that ignores the rooks on g1 and a1, which can be captured. This is the heart of the chain of sacrifices.',
+      'The pawn on e5 guards the squares f6 and d6. Those two squares will later be the key to the checkmate.',
+      'The knight gives check and captures a pawn, forcing the king to d8.',
+      'A queen sacrifice! After this, checkmate cannot be avoided.',
+      "Checkmate with the bishop on e7, helped by the knights on d5 and g7. Black's king is boxed in by its own pieces.",
+    ],
+  },
+  'game-of-the-century': {
+    title: 'The Game of the Century',
+    white: 'Donald Byrne',
+    black: 'Bobby Fischer',
+    event: 'Rosenwald Memorial, New York, 17 October 1956',
+    opening: 'Grünfeld Defence',
+    summary: 'Fischer, aged 13, sacrifices his queen on move 17 and wins through the cooperation of his minor pieces.',
+    learn: [
+      'A queen sacrifice for real compensation: two bishops, a knight and a rook working together.',
+      "Repeated knight checks are used to gain time and drag the king into a bad position.",
+      'Piece activity matters more than the material count.',
+      'The Grünfeld Defence: Black lets White build a centre, then attacks it.',
+    ],
+    notes: [
+      'The Grünfeld setup: the bishop eyes the centre from a distance while the king prepares to castle.',
+      "Black's knight jumps to a4 and attacks White's queen on c5.",
+      'Fischer starts to open up the position by taking the pawn on e4.',
+      "Byrne takes the pawn on e7 and attacks Black's queen. It looks good, but it is exactly what Fischer had calculated.",
+      'The famous queen sacrifice. Black offers the queen on b6 to open an attack with bishop and knight.',
+      'The bishop captures the bishop with check, and Black starts to get compensation.',
+      'Repeated knight checks (e2, d4, c3) drive the king back and forth and win pawns.',
+      "The a-pawn recaptures the bishop on b6. Black's queen is already given up, but Black's minor pieces are very active and the white king is boxed in.",
+      "The knight takes the rook on d1 and Black's attack keeps rolling.",
+      'Checkmate. The bishop on b3 protects the rook, the knight on c3 covers b1 and d1, and the white queen is far from the king.',
+    ],
+  },
+  'kasparov-topalov': {
+    title: 'Kasparov vs Topalov (a modern Immortal)',
+    white: 'Garry Kasparov',
+    black: 'Veselin Topalov',
+    event: 'Wijk aan Zee (Hoogovens), 1999',
+    opening: 'Pirc Defence',
+    summary: "Two consecutive rook sacrifices force Black's king to walk from b8 all the way to e1.",
+    learn: [
+      'Long-range combinations: Kasparov sees many moves ahead.',
+      "Rook sacrifices that open the enemy king to every attacker.",
+      'A quiet move (36.Bf1) can be stronger than continuing with checks.',
+      'The Pirc structure: Black lets White build a centre, then pressures it from the wings.',
+    ],
+    notes: [
+      "Bishop to e3 and queen to d2: the classic attacking set-up against the Pirc, with the plan Bh6 to trade Black's king's bishop.",
+      "White offers a bishop trade that endangers the safety of Black's king.",
+      'White castles queenside and Black follows on move 13. Both kings sit on the queenside.',
+      "The knight enters a5 and pressures Black's king on the queenside.",
+      'The knight is sacrificed to deflect a defender and open the position.',
+      "The first rook sacrifice: White opens the d-file and forces Black's pawn to capture.",
+      "The second rook sacrifice. Black's king is forced to b6 and starts to be hunted across the board.",
+      'The queen gives check and forces ...Kxa5.',
+      "The pawn gives check and drags Black's king even further from its pawns.",
+      'A quiet move that prepares Rd7. Black is running out of good answers.',
+      'The rook on d7 is sacrificed to cut off the last defence.',
+      "Black's king has made it all the way to e1, on White's side of the board. A very unusual sight.",
+      'Topalov resigns; the threat of checkmate cannot be parried.',
+    ],
+  },
+  'deep-blue': {
+    title: 'Deep Blue vs Kasparov (Game 6, 1997)',
+    white: 'Deep Blue',
+    black: 'Garry Kasparov',
+    event: 'New York, 11 May 1997 (rematch, Game 6)',
+    opening: 'Caro-Kann Defence',
+    summary: 'The deciding game: a computer beats the reigning world champion in a match. Kasparov resigns on move 19.',
+    learn: [
+      "The knight sacrifice on e6 opens Black's king and wrecks his coordination.",
+      'Why opening theory matters: one inaccurate move can be punished immediately.',
+      'Computers calculate tactics accurately; human players need to stay alert.',
+      'The Caro-Kann: Black builds a solid structure with c6 and d5.',
+    ],
+    notes: [
+      'The Caro-Kann: a solid defence that prepares d5 without leaving weaknesses.',
+      'The knight to g5 attacks f7 and puts pressure on Black from the opening.',
+      'Considered inaccurate. It allows the knight sacrifice on e6.',
+      "A knight sacrifice. Black's queen must capture, and Black's king loses its cover.",
+      "The bishop gives check and takes away Black's right to castle.",
+      'Another bishop is sacrificed, to open the e-file.',
+      "The rook captures Black's queen. Black only gets a rook in return, and the position cannot be held.",
+      'Kasparov resigns. Deep Blue wins the match 3.5-2.5.',
+    ],
+  },
+  'fischer-spassky-6': {
+    title: 'Fischer vs Spassky (Game 6, 1972)',
+    white: 'Bobby Fischer',
+    black: 'Boris Spassky',
+    event: 'World Championship, Reykjavik, 1972 (Game 6)',
+    opening: "Queen's Gambit Declined, Tartakower Variation",
+    summary: 'Fischer opens with 1.c4 (not his beloved 1.e4) and wins with very clean strategic play. Spassky even joined the applause.',
+    learn: [
+      'Fischer usually started with 1.e4; here he chose 1.c4 to surprise his opponent.',
+      "Strategy: a strong centre and free pieces make an attack on the kingside run smoothly.",
+      "Trades of minor pieces leave Black with a weak pawn (d5) as a target.",
+      'Black was too passive; space and the initiative were eventually won by White.',
+    ],
+    notes: [
+      'The English Opening. Fischer leaves 1.e4 behind to surprise Spassky.',
+      "The game moves into the Queen's Gambit Declined: White's pawns on c4 and d4 form the centre.",
+      'The bishop pins the knight on f6 to the queen, a classic pattern in the Queen\'s Gambit.',
+      "White trades off Black's active dark-squared bishop.",
+      'The knight trade leaves a Black pawn on d5, which later becomes a target.',
+      "The knight captures the bishop and damages Black's pawn structure.",
+      'White grabs space in the centre with the e-pawn.',
+      'The pawn on e5 presses on Black and gives the bishop a strong square.',
+      "The pawn on e6 pierces Black's position and opens lines for the queen and rook.",
+      'Spassky resigns. He applauds his opponent.',
+    ],
+  },
+};

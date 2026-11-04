@@ -1,5 +1,6 @@
 import { Analyzer } from '../analysis/analyzer';
 import { Engine } from './engine';
+import { tr } from '../i18n';
 
 let engine: Engine | null = null;
 let analyzer: Analyzer | null = null;
@@ -19,6 +20,6 @@ export function getAnalyzer(): Analyzer {
 export async function engineReady(ms = 20000): Promise<void> {
   await Promise.race([
     getEngine().ready,
-    new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Engine tidak merespons')), ms)),
+    new Promise<never>((_, rej) => setTimeout(() => rej(new Error(tr('The engine is not responding', 'Engine tidak merespons'))), ms)),
   ]);
 }

@@ -1,3 +1,4 @@
+import { tr } from '../core/i18n';
 /** Unduh teks sebagai berkas (tanpa server). */
 export function downloadText(filename: string, text: string, mime = 'text/plain') {
   const url = URL.createObjectURL(new Blob([text], { type: mime + ';charset=utf-8' }));
@@ -18,7 +19,7 @@ export async function copyText(text: string): Promise<boolean> {
 /** Nama berkas aman: huruf/angka/titik/strip, selain itu menjadi garis bawah. */
 export function safeFilename(name: string): string {
   const cleaned = name.normalize('NFKD').replace(/[^A-Za-z0-9.-]+/g, '_').replace(/^_+|_+$/g, '');
-  return cleaned || 'partai';
+  return cleaned || tr('game', 'partai');
 }
 
 /** Tanggal lokal YYYY-MM-DD (bukan UTC). */

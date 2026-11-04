@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js';
 import type { SavedGame } from '../../types';
+import { tr } from '../i18n';
 
 export type Result = SavedGame['result'];
 
@@ -12,14 +13,17 @@ export interface GameStatus {
 export function statusOf(chess: Chess): GameStatus {
   if (chess.isCheckmate()) {
     const whiteWon = chess.turn() === 'b';
-    return { over: true, result: whiteWon ? '1-0' : '0-1', text: `Skakmat! ${whiteWon ? 'Putih' : 'Hitam'} menang.` };
+    return { over: true, result: whiteWon ? '1-0' : '0-1', text: tr(`Checkmate! ${whiteWon ? 'White' : 'Black'} wins.`, `Skakmat! ${whiteWon ? 'Putih' : 'Hitam'} menang.`) };
   }
-  if (chess.isStalemate()) return { over: true, result: '1/2-1/2', text: 'Remis: stalemate.' };
-  if (chess.isInsufficientMaterial()) return { over: true, result: '1/2-1/2', text: 'Remis: materi tidak cukup.' };
-  if (chess.isThreefoldRepetition()) return { over: true, result: '1/2-1/2', text: 'Remis: pengulangan tiga kali.' };
-  if (chess.isDraw()) return { over: true, result: '1/2-1/2', text: 'Remis: aturan 50 langkah.' };
-  const side = chess.turn() === 'w' ? 'Putih' : 'Hitam';
-  return { over: false, result: '*', text: chess.inCheck() ? `Giliran ${side} (skak!)` : `Giliran ${side}` };
+  if (chess.isStalemate()) return { over: true, result: '1/2-1/2', text: tr('Draw: stalemate.', 'Remis: stalemate.') };
+  if (chess.isInsufficientMaterial()) return { over: true, result: '1/2-1/2', text: tr('Draw: insufficient material.', 'Remis: materi tidak cukup.') };
+  if (chess.isThreefoldRepetition()) return { over: true, result: '1/2-1/2', text: tr('Draw: threefold repetition.', 'Remis: pengulangan tiga kali.') };
+  if (chess.isDraw()) return { over: true, result: '1/2-1/2', text: tr('Draw: fifty-move rule.', 'Remis: aturan 50 langkah.') };
+  const side = chess.turn() === 'w' ? tr('White', 'Putih') : tr('Black', 'Hitam');
+  return {
+    over: false, result: '*',
+    text: chess.inCheck() ? tr(`${side} to move (check!)`, `Giliran ${side} (skak!)`) : tr(`${side} to move`, `Giliran ${side}`),
+  };
 }
 
 /** Petak tujuan yang legal dari sebuah petak. */

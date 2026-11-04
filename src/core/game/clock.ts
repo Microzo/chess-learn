@@ -1,3 +1,4 @@
+import { tr } from '../i18n';
 export type Side = 'w' | 'b';
 
 export interface TimeControl {
@@ -11,11 +12,11 @@ export interface TimeControl {
 
 const min = 60_000;
 export const TIME_CONTROLS: TimeControl[] = [
-  { id: '1+0', label: '1 menit', baseMs: 1 * min, incMs: 0 },
-  { id: '3+0', label: '3 menit', baseMs: 3 * min, incMs: 0 },
+  { id: '1+0', get label() { return tr('1 min', '1 menit'); }, baseMs: 1 * min, incMs: 0 },
+  { id: '3+0', get label() { return tr('3 min', '3 menit'); }, baseMs: 3 * min, incMs: 0 },
   { id: '3+2', label: '3 | 2', baseMs: 3 * min, incMs: 2000 },
-  { id: '5+0', label: '5 menit', baseMs: 5 * min, incMs: 0 },
-  { id: '10+0', label: '10 menit', baseMs: 10 * min, incMs: 0 },
+  { id: '5+0', get label() { return tr('5 min', '5 menit'); }, baseMs: 5 * min, incMs: 0 },
+  { id: '10+0', get label() { return tr('10 min', '10 menit'); }, baseMs: 10 * min, incMs: 0 },
   { id: '10+5', label: '10 | 5', baseMs: 10 * min, incMs: 5000 },
   { id: '15+10', label: '15 | 10', baseMs: 15 * min, incMs: 10_000 },
 ];

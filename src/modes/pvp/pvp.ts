@@ -4,6 +4,7 @@ import { ChessClock, formatClock, TIME_CONTROLS, type Side, type TimeControl } f
 import { hasMatingMaterial, statusOf, toPgn, type Result } from '../../core/game/game';
 import { newId, saveGame } from '../../core/storage/games';
 import { Board } from '../../ui/board/board';
+import { tr } from '../../core/i18n';
 import { h } from '../../ui/dom';
 import { gameLayout } from '../../ui/layout';
 import { MoveList } from '../../ui/panels/panels';
@@ -11,8 +12,8 @@ import { homeScreen } from '../../ui/screens/home';
 import { replayScreen } from '../replay/replay';
 
 export function pvpSetup(): Screen {
-  const p1 = h('input', { value: 'Pemain 1', maxlength: '20' }) as HTMLInputElement;
-  const p2 = h('input', { value: 'Pemain 2', maxlength: '20' }) as HTMLInputElement;
+  const p1 = h('input', { value: tr('Player 1', 'Pemain 1'), maxlength: '20' }) as HTMLInputElement;
+  const p2 = h('input', { value: tr('Player 2', 'Pemain 2'), maxlength: '20' }) as HTMLInputElement;
   let tc: TimeControl | null = null;
   const chips: HTMLElement[] = [];
   const paintChips = () => chips.forEach((c, i) => c.classList.toggle('on', (i === 0 ? tc === null : tc === TIME_CONTROLS[i - 1])));
@@ -21,19 +22,19 @@ export function pvpSetup(): Screen {
     chips.push(el);
     return el;
   };
-  const chipRow = h('div', { class: 'chips' }, chip('Tanpa jam', null), ...TIME_CONTROLS.map((t) => chip(t.label, t)));
+  const chipRow = h('div', { class: 'chips' }, chip(tr('No clock', 'Tanpa jam'), null), ...TIME_CONTROLS.map((t) => chip(t.label, t)));
   paintChips();
 
   const el = h('div', { class: 'screen' },
-    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, 'Main berdua (offline)')),
-    h('p', { class: 'muted' }, 'Dua pemain bergantian di satu perangkat. Setelah selesai, partai bisa dianalisa di Replay.'),
-    h('label', { class: 'field' }, 'Putih', p1),
-    h('label', { class: 'field' }, 'Hitam', p2),
-    h('div', { class: 'field' }, 'Jam catur', chipRow),
+    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, tr('Two Players (offline)', 'Main berdua (offline)'))),
+    h('p', { class: 'muted' }, tr('Two players take turns on one device. When the game ends you can analyse it in Replay.', 'Dua pemain bergantian di satu perangkat. Setelah selesai, partai bisa dianalisa di Replay.')),
+    h('label', { class: 'field' }, tr('White', 'Putih'), p1),
+    h('label', { class: 'field' }, tr('Black', 'Hitam'), p2),
+    h('div', { class: 'field' }, tr('Chess clock', 'Jam catur'), chipRow),
     h('button', {
       class: 'btn primary big',
-      onclick: () => go(() => pvpGame(p1.value.trim() || 'Putih', p2.value.trim() || 'Hitam', tc)),
-    }, 'Mulai'),
+      onclick: () => go(() => pvpGame(p1.value.trim() || tr('White', 'Putih'), p2.value.trim() || tr('Black', 'Hitam'), tc)),
+    }, tr('Start', 'Mulai')),
   );
   return { el };
 }
@@ -91,10 +92,10 @@ export function pvpGame(white: string, black: string, tc: TimeControl | null = n
     }
     moves.render(chess.history(), [], chess.history().length);
     status.textContent = ended
-      ? (timeoutText || `Selesai: ${ended}`)
+      ? (timeoutText || tr(`Finished: ${ended}`, `Selesai: ${ended}`))
       : statusOf(chess).over
         ? statusOf(chess).text
-        : `Giliran ${name(chess.turn())}${chess.inCheck() ? ' (skak!)' : ''}`;
+        : tr(`${name(chess.turn())} to move${chess.inCheck() ? ' (check!)' : ''}`, `Giliran ${name(chess.turn())}${chess.inCheck() ? ' (skak!)' : ''}`);
     if (over) showEnd();
   }
 
@@ -114,7 +115,9 @@ export function pvpGame(white: string, black: string, tc: TimeControl | null = n
       const canWin = hasMatingMaterial(chess, winner);
       ended = !canWin ? '1/2-1/2' : winner === 'w' ? '1-0' : '0-1';
       const loser = flagged === 'w' ? white : black;
-      timeoutText = canWin ? `Waktu ${loser} habis.` : 'Waktu habis, tetapi lawan tidak punya materi untuk skakmat: remis.';
+      timeoutText = canWin
+        ? tr(`${loser} ran out of time.`, `Waktu ${loser} habis.`)
+        : tr('Time is up, but the opponent has no mating material: draw.', 'Waktu habis, tetapi lawan tidak punya materi untuk skakmat: remis.');
       draw();
     }
   }
@@ -124,10 +127,10 @@ export function pvpGame(white: string, black: string, tc: TimeControl | null = n
     persist();
     endBox.replaceChildren(
       h('div', { class: 'card end' },
-        h('strong', {}, result === '1-0' ? `${white} menang` : result === '0-1' ? `${black} menang` : 'Remis'),
+        h('strong', {}, result === '1-0' ? tr(`${white} wins`, `${white} menang`) : result === '0-1' ? tr(`${black} wins`, `${black} menang`) : tr('Draw', 'Remis')),
         h('div', { class: 'row' },
-          h('button', { class: 'btn primary', onclick: () => go(() => replayScreen(id)) }, 'Replay & analisa'),
-          h('button', { class: 'btn', onclick: () => go(pvpSetup) }, 'Main lagi'),
+          h('button', { class: 'btn primary', onclick: () => go(() => replayScreen(id)) }, tr('Replay & analysis', 'Replay & analisa')),
+          h('button', { class: 'btn', onclick: () => go(pvpSetup) }, tr('Play again', 'Main lagi')),
         ),
       ),
     );
@@ -150,12 +153,12 @@ export function pvpGame(white: string, black: string, tc: TimeControl | null = n
     return yes;
   };
   const resign = () => {
-    if (isOver() || !ask(`${name(chess.turn())} menyerah?`)) return;
+    if (isOver() || !ask(tr(`Does ${name(chess.turn())} resign?`, `${name(chess.turn())} menyerah?`))) return;
     ended = chess.turn() === 'w' ? '0-1' : '1-0';
     draw();
   };
   const draw_ = () => {
-    if (isOver() || !ask('Kedua pemain sepakat remis?')) return;
+    if (isOver() || !ask(tr('Do both players agree to a draw?', 'Kedua pemain sepakat remis?'))) return;
     ended = '1/2-1/2';
     draw();
   };
@@ -166,10 +169,10 @@ export function pvpGame(white: string, black: string, tc: TimeControl | null = n
       h('h2', {}, `${white} vs ${black}`)),
     [topBar, board.el, bottomBar, status],
     [h('div', { class: 'row' },
-      clock ? null : h('button', { class: 'btn', onclick: undo }, '↶ Batal langkah'),
-      h('button', { class: 'btn', onclick: draw_ }, '½ Remis'),
-      h('button', { class: 'btn danger', onclick: resign }, '🏳 Menyerah'),
-      h('button', { class: 'btn', onclick: () => { manualFlip = !manualFlip; draw(); } }, '⟲ Putar')),
+      clock ? null : h('button', { class: 'btn', onclick: undo }, tr('↶ Undo move', '↶ Batal langkah')),
+      h('button', { class: 'btn', onclick: draw_ }, tr('½ Draw', '½ Remis')),
+      h('button', { class: 'btn danger', onclick: resign }, tr('🏳 Resign', '🏳 Menyerah')),
+      h('button', { class: 'btn', onclick: () => { manualFlip = !manualFlip; draw(); } }, tr('⟲ Flip', '⟲ Putar'))),
     endBox, moves.el],
   );
   draw();

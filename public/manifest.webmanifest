@@ -1,7 +1,7 @@
 {
   "name": "Chess Learn",
   "short_name": "ChessLearn",
-  "description": "Belajar catur offline: lawan bot dengan analisa langkah, PvP, dan replay.",
+  "description": "Learn chess offline: play the bot with move analysis, two-player mode, and replay.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

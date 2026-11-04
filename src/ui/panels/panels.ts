@@ -1,4 +1,5 @@
-import { CLASS_LABEL, CLASS_SYMBOL } from '../../core/analysis/analyzer';
+import { CLASS_LABEL, CLASS_SYMBOL, commentFor } from '../../core/analysis/analyzer';
+import { tr } from '../../core/i18n';
 import { winPercent } from '../../core/analysis/classifier';
 import type { Evaluation, MoveAnalysis, MoveClass } from '../../types';
 import { clear, h } from '../dom';
@@ -32,10 +33,10 @@ export class EvalBar {
     // angka diletakkan di sisi pemain yang unggul agar selalu terbaca
     const lead = pct > 52 ? 'w' : pct < 48 ? 'b' : 'even';
     this.el.dataset['lead'] = lead;
-    const who = lead === 'w' ? 'Putih unggul' : lead === 'b' ? 'Hitam unggul' : 'Seimbang';
+    const who = lead === 'w' ? tr('White is better', 'Putih unggul') : lead === 'b' ? tr('Black is better', 'Hitam unggul') : tr('Balanced', 'Seimbang');
     this.el.title = `${who} (${formatEval(e)})`;
     this.el.setAttribute('role', 'img');
-    this.el.setAttribute('aria-label', `Bar dominasi: ${who}, ${formatEval(e)}, peluang menang Putih ${pct.toFixed(0)} persen`);
+    this.el.setAttribute('aria-label', tr(`Advantage bar: ${who}, ${formatEval(e)}, White win chance ${pct.toFixed(0)} percent`, `Bar dominasi: ${who}, ${formatEval(e)}, peluang menang Putih ${pct.toFixed(0)} persen`));
   }
 
   /** Papan dibalik (Hitam di bawah): bar ikut dibalik agar sisi Hitam tetap searah papan. */
@@ -83,8 +84,8 @@ export class MoveList {
 
 /** Kartu analisa satu langkah. */
 export function analysisCard(a: MoveAnalysis | null, opts: { pending?: boolean; title?: string } = {}): HTMLElement {
-  if (opts.pending) return h('div', { class: 'card pending' }, 'Menganalisa langkah…');
-  if (!a) return h('div', { class: 'card muted' }, opts.title ?? 'Lakukan langkah, analisa akan muncul di sini.');
+  if (opts.pending) return h('div', { class: 'card pending' }, tr('Analysing move…', 'Menganalisa langkah…'));
+  if (!a) return h('div', { class: 'card muted' }, opts.title ?? tr('Make a move and the analysis will appear here.', 'Lakukan langkah, analisa akan muncul di sini.'));
   const moverIsWhite = a.ply % 2 === 1;
   return h(
     'div',
@@ -96,7 +97,7 @@ export function analysisCard(a: MoveAnalysis | null, opts: { pending?: boolean; 
       badge(a.classification),
       h('span', { class: 'ev' }, `${formatEval(a.evalBefore)} → ${formatEval(a.evalAfter)}`),
     ),
-    h('p', {}, a.comment),
+    h('p', {}, commentFor(a)),
     a.opening && a.classification !== 'book' ? h('p', { class: 'muted' }, `Opening: ${a.opening.name}`) : null,
   );
 }

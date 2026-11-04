@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig, type Plugin } from 'vite';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -65,4 +66,5 @@ export default defineConfig({
   // Hanya localhost secara bawaan; untuk membuka dari HP lewat Wi-Fi jalankan `npm run dev -- --host` (jaringan tepercaya saja).
   server: { port: 5173 },
   preview: { port: 4173 },
+  test: { setupFiles: ['tests/setup.ts'] },
 });

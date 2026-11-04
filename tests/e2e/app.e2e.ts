@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { clickMove, dragMove, LEGAL_PGN, menu, noHorizontalScroll, pieces, square, watchErrors } from './util';
 
 test.describe('layar utama dan navigasi', () => {

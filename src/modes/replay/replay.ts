@@ -6,13 +6,18 @@ import { engineReady, getAnalyzer } from '../../core/engine/instance';
 import { deleteGame, exportBackup, getGame, importBackup, listGames, newId, saveGame } from '../../core/storage/games';
 import type { Evaluation, MoveAnalysis, MoveClass, SavedGame } from '../../types';
 import { Board } from '../../ui/board/board';
+import { tr } from '../../core/i18n';
 import { h } from '../../ui/dom';
 import { boardWithBar, gameLayout } from '../../ui/layout';
 import { copyText, downloadText, localDate, safeFilename } from '../../ui/download';
 import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 
-const MODE_LABEL = { learning: 'Belajar', pvp: 'PvP', import: 'Impor' } as const;
+const MODE_LABEL = {
+  get learning() { return tr('Learn', 'Belajar'); },
+  pvp: 'PvP',
+  get import() { return tr('Import', 'Impor'); },
+};
 const MAX_PGN = 200_000;
 /** Header PGN memakai "?" untuk nama yang tidak diketahui. */
 const named = (v: string | null | undefined, fallback: string) => (v && v.trim() && v.trim() !== '?' ? v : fallback);
@@ -20,19 +25,19 @@ const SHOWN: MoveClass[] = ['book', 'brilliant', 'great', 'best', 'excellent', '
 
 export function replayList(): Screen {
   const listBox = h('div', { class: 'list' });
-  const pgnBox = h('textarea', { rows: '5', placeholder: 'Tempel PGN di sini…' }) as HTMLTextAreaElement;
+  const pgnBox = h('textarea', { rows: '5', placeholder: tr('Paste PGN here…', 'Tempel PGN di sini…') }) as HTMLTextAreaElement;
 
   const render = () => {
     const games = listGames();
     listBox.replaceChildren(
       ...(games.length === 0
-        ? [h('p', { class: 'muted' }, 'Belum ada partai tersimpan. Mainkan satu partai atau impor PGN.')]
+        ? [h('p', { class: 'muted' }, tr('No saved games yet. Play a game or import a PGN.', 'Belum ada partai tersimpan. Mainkan satu partai atau impor PGN.'))]
         : games.map((g) =>
             h('div', { class: 'item' },
               h('button', { class: 'item-main', onclick: () => go(() => replayScreen(g.id)) },
                 h('strong', {}, `${g.white} vs ${g.black}`),
-                h('small', {}, `${MODE_LABEL[g.mode]} · ${g.result} · ${new Date(g.createdAt).toLocaleString('id-ID')}${g.analysis ? ' · ✔ teranalisa' : ''}`)),
-              h('button', { class: 'btn ghost', 'aria-label': 'Hapus', onclick: () => { if (confirm('Hapus partai ini?')) { deleteGame(g.id); render(); } } }, '🗑')))),
+                h('small', {}, `${MODE_LABEL[g.mode]} · ${g.result} · ${new Date(g.createdAt).toLocaleString('id-ID')}${g.analysis ? tr(' · ✔ analysed', ' · ✔ teranalisa') : ''}`)),
+              h('button', { class: 'btn ghost', 'aria-label': tr('Delete', 'Hapus'), onclick: () => { if (confirm(tr('Delete this game?', 'Hapus partai ini?'))) { deleteGame(g.id); render(); } } }, '🗑')))),
     );
   };
   render();
@@ -47,12 +52,12 @@ export function replayList(): Screen {
       const id = newId();
       saveGame({
         id, mode: 'import', createdAt: Date.now(),
-        white: named(hd['White'], 'Putih'), black: named(hd['Black'], 'Hitam'),
+        white: named(hd['White'], tr('White', 'Putih')), black: named(hd['Black'], tr('Black', 'Hitam')),
         pgn: c.pgn(), result: (hd['Result'] as SavedGame['result']) || '*',
       });
       go(() => replayScreen(id));
     } catch {
-      alert('PGN tidak valid.');
+      alert(tr('Invalid PGN.', 'PGN tidak valid.'));
     }
   };
 
@@ -64,21 +69,21 @@ export function replayList(): Screen {
     try {
       const n = importBackup(await f.text());
       render();
-      alert(`${n} partai dipulihkan.`);
+      alert(tr(`${n} game(s) restored.`, `${n} partai dipulihkan.`));
     } catch (e) {
       alert((e as Error).message);
     }
   };
   const backup = () => {
-    if (listGames().length === 0) { alert('Belum ada partai untuk dicadangkan.'); return; }
-    downloadText(`chess-learn-cadangan-${localDate()}.json`, exportBackup(), 'application/json');
+    if (listGames().length === 0) { alert(tr('No games to back up yet.', 'Belum ada partai untuk dicadangkan.')); return; }
+    downloadText(`${tr('chess-learn-backup', 'chess-learn-cadangan')}-${localDate()}.json`, exportBackup(), 'application/json');
   };
 
   const el = h('div', { class: 'screen' },
-    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, 'Replay & Analisa')),
+    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, tr('Replay & Analysis', 'Replay & Analisa'))),
     listBox,
-    h('div', { class: 'row' }, h('button', { class: 'btn', onclick: backup }, '⬇ Cadangkan semua'), h('button', { class: 'btn', onclick: () => fileIn.click() }, '⬆ Pulihkan'), fileIn),
-    h('details', {}, h('summary', {}, 'Impor PGN'), pgnBox, h('button', { class: 'btn', onclick: importPgn }, 'Impor')),
+    h('div', { class: 'row' }, h('button', { class: 'btn', onclick: backup }, tr('⬇ Back up all', '⬇ Cadangkan semua')), h('button', { class: 'btn', onclick: () => fileIn.click() }, tr('⬆ Restore', '⬆ Pulihkan')), fileIn),
+    h('details', {}, h('summary', {}, tr('Import PGN', 'Impor PGN')), pgnBox, h('button', { class: 'btn', onclick: importPgn }, tr('Import', 'Impor'))),
   );
   return { el };
 }
@@ -128,20 +133,20 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
   const progress = h('div', { class: 'muted' });
   const moves = new MoveList((ply) => { idx = ply; show(); });
   const bestBtn = h('button', { class: 'btn', onclick: () => { showBest = !showBest; show(); } }, '💡 Alt');
-  const analyseBtn = h('button', { class: 'btn primary', onclick: () => void runAnalysis() }, '🔍 Analisa partai');
+  const analyseBtn = h('button', { class: 'btn primary', onclick: () => void runAnalysis() }, tr('🔍 Analyse game', '🔍 Analisa partai'));
 
   const copyBtn = h('button', { class: 'btn', onclick: async () => {
     const ok = await copyText(game.pgn);
-    copyBtn.textContent = ok ? '✔ Tersalin' : 'Gagal menyalin';
-    setTimeout(() => { copyBtn.textContent = '📋 Salin PGN'; }, 1500);
-  } }, '📋 Salin PGN');
+    copyBtn.textContent = ok ? tr('✔ Copied', '✔ Tersalin') : tr('Copy failed', 'Gagal menyalin');
+    setTimeout(() => { copyBtn.textContent = tr('📋 Copy PGN', '📋 Salin PGN'); }, 1500);
+  } }, tr('📋 Copy PGN', '📋 Salin PGN'));
 
   const analysis = (): MoveAnalysis[] => game!.analysis ?? [];
 
   const saveCopy = (ev: Event) => {
     const btn = ev.currentTarget as HTMLButtonElement;
     saveGame({ ...game, id: newId(), mode: 'import', createdAt: Date.now() });
-    btn.textContent = '✔ Tersimpan di Replay';
+    btn.textContent = tr('✔ Saved to Replay', '✔ Tersimpan di Replay');
     btn.disabled = true;
   };
 
@@ -169,17 +174,17 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
     evalBar.el.classList.toggle('idle', a.length === 0); // belum dianalisa: bar tidak menunjukkan apa-apa
     moves.render(sans, a, idx);
 
-    if (idx === 0) cardBox.replaceChildren(h('div', { class: 'card muted' }, 'Posisi awal.'));
+    if (idx === 0) cardBox.replaceChildren(h('div', { class: 'card muted' }, tr('Starting position.', 'Posisi awal.')));
     else if (cur) {
       cardBox.replaceChildren(analysisCard(cur));
-      if (alt) cardBox.append(h('div', { class: 'card' }, h('strong', {}, `Alternatif lebih baik: ${cur.engineBest.san}`), h('p', { class: 'muted' }, 'Papan menampilkan posisi sebelum langkah.')));
+      if (alt) cardBox.append(h('div', { class: 'card' }, h('strong', {}, tr(`Better alternative: ${cur.engineBest.san}`, `Alternatif lebih baik: ${cur.engineBest.san}`)), h('p', { class: 'muted' }, tr('The board shows the position before the move.', 'Papan menampilkan posisi sebelum langkah.'))));
     } else {
-      cardBox.replaceChildren(h('div', { class: 'card muted' }, `${Math.ceil(idx / 2)}${idx % 2 ? '.' : '...'} ${sans[idx - 1]} · jalankan analisa untuk melihat penilaian.`));
+      cardBox.replaceChildren(h('div', { class: 'card muted' }, `${Math.ceil(idx / 2)}${idx % 2 ? '.' : '...'} ${sans[idx - 1]} ${tr('· run the analysis to see the evaluation.', '· jalankan analisa untuk melihat penilaian.')}`));
     }
 
     const note = notes?.[idx];
     if (note) {
-      cardBox.append(h('div', { class: 'card note' }, h('strong', {}, '📝 Catatan'), h('p', {}, note)));
+      cardBox.append(h('div', { class: 'card note' }, h('strong', {}, tr('📝 Note', '📝 Catatan')), h('p', {}, note)));
     }
 
     // nama opening dari posisi (tanpa engine)
@@ -199,7 +204,7 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
   function renderSummary() {
     const a = analysis();
     analyseBtn.style.display = a.length ? 'none' : '';
-    if (!a.length) { summary.replaceChildren(h('p', { class: 'muted' }, 'Belum dianalisa. Tekan "Analisa partai" untuk melihat kualitas tiap langkah, akurasi, dan grafik evaluasi.')); return; }
+    if (!a.length) { summary.replaceChildren(h('p', { class: 'muted' }, tr('Not analysed yet. Press "Analyse game" to see the quality of every move, accuracy and the evaluation graph.', 'Belum dianalisa. Tekan "Analisa partai" untuk melihat kualitas tiap langkah, akurasi, dan grafik evaluasi.'))); return; }
     const acc = game!.accuracy ?? accuracyOf(a);
     const col = (title: string, name: string, pct: number, side: 'w' | 'b') => {
       const counts = classCounts(a, side);
@@ -209,16 +214,16 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
         h('div', { class: 'counts' }, ...SHOWN.filter((c) => counts[c]).map((c) =>
           h('span', { class: 'cnt', title: CLASS_LABEL[c] }, badge(c, false), ` ${counts[c]}`))));
     };
-    summary.replaceChildren(h('div', { class: 'sumgrid' }, col('Putih', game!.white, acc.white, 'w'), col('Hitam', game!.black, acc.black, 'b')));
+    summary.replaceChildren(h('div', { class: 'sumgrid' }, col(tr('White', 'Putih'), game!.white, acc.white, 'w'), col(tr('Black', 'Hitam'), game!.black, acc.black, 'b')));
   }
 
   async function runAnalysis() {
     (analyseBtn as HTMLButtonElement).disabled = true;
-    progress.textContent = 'Memuat engine…';
+    progress.textContent = tr('Loading engine…', 'Memuat engine…');
     try {
       await engineReady();
       const res = await getAnalyzer().analysePgn(game!.pgn, (d, t) => {
-        if (!destroyed) progress.textContent = `Menganalisa langkah ${d}/${t}…`;
+        if (!destroyed) progress.textContent = tr(`Analysing move ${d}/${t}…`, `Menganalisa langkah ${d}/${t}…`);
       });
       game!.analysis = res;
       game!.accuracy = accuracyOf(res);
@@ -228,7 +233,7 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
       renderSummary();
       show();
     } catch (e) {
-      progress.textContent = `Gagal menganalisa: ${(e as Error).message}`;
+      progress.textContent = tr(`Analysis failed: ${(e as Error).message}`, `Gagal menganalisa: ${(e as Error).message}`);
       (analyseBtn as HTMLButtonElement).disabled = false;
     }
   }
@@ -244,7 +249,7 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
 
   const el = gameLayout(
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(opts.back) }, '←'),
+      h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(opts.back) }, '←'),
       h('h2', {}, `${game.white} vs ${game.black}`)),
     [opening, boardWithBar(evalBar.el, board.el)],
     [opts.intro ?? null, h('div', { class: 'row nav' },
@@ -257,8 +262,8 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
     cardBox, graphBox, summary, analyseBtn, progress, moves.el,
     h('div', { class: 'row' },
       copyBtn,
-      opts.persist ? null : h('button', { class: 'btn', onclick: saveCopy }, '💾 Simpan ke Replay saya'),
-      h('button', { class: 'btn', onclick: () => downloadText(`${safeFilename(`${game.white}-vs-${game.black}`)}.pgn`, game.pgn, 'application/x-chess-pgn') }, '⬇ Unduh PGN'))],
+      opts.persist ? null : h('button', { class: 'btn', onclick: saveCopy }, tr('💾 Save to my Replay', '💾 Simpan ke Replay saya')),
+      h('button', { class: 'btn', onclick: () => downloadText(`${safeFilename(`${game.white}-vs-${game.black}`)}.pgn`, game.pgn, 'application/x-chess-pgn') }, tr('⬇ Download PGN', '⬇ Unduh PGN')))],
   );
 
   renderSummary();

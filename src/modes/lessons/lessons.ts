@@ -1,6 +1,8 @@
 import { Chess } from 'chess.js';
 import { go, type Screen } from '../../app/router';
-import { CATEGORY_LABEL, CATEGORY_ORDER, GLOSSARY, LESSONS, type Demo, type Lesson } from '../../data/lessons';
+import { tr, currentLang } from '../../core/i18n';
+import { CATEGORY_ORDER, GLOSSARY, LESSONS, type Demo, type Lesson } from '../../data/lessons';
+import { categoryView, glossaryView, lessonView } from '../../data/localize';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
 import { homeScreen } from '../../ui/screens/home';
@@ -38,8 +40,8 @@ export function lessonList(): Screen {
   const total = LESSONS.length;
 
   const sections = CATEGORY_ORDER.map((cat) => {
-    const info = CATEGORY_LABEL[cat];
-    const items = LESSONS.filter((l) => l.category === cat);
+    const info = categoryView(cat);
+    const items = LESSONS.filter((l) => l.category === cat).map(lessonView);
     return h('section', { class: 'lesson-cat' },
       h('h3', {}, `${info.icon} ${info.title}`),
       h('small', {}, info.sub),
@@ -52,29 +54,30 @@ export function lessonList(): Screen {
 
   const el = h('div', { class: 'screen' },
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(homeScreen) }, '←'),
-      h('h2', {}, 'Belajar Strategi')),
-    h('p', { class: 'muted' }, `${done.size} dari ${total} pelajaran selesai. Semua materi bisa dibaca offline.`),
+      h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(homeScreen) }, '←'),
+      h('h2', {}, tr('Learn Strategy', 'Belajar Strategi'))),
+    h('p', { class: 'muted' }, tr(`${done.size} of ${total} lessons completed. All material can be read offline.`, `${done.size} dari ${total} pelajaran selesai. Semua materi bisa dibaca offline.`)),
     h('div', { class: 'row' },
-      h('button', { class: 'btn primary', onclick: () => go(puzzleList) }, `🧩 Latihan taktik (${solvedCount()}/${PUZZLES.length})`),
-      h('button', { class: 'btn', onclick: () => go(glossaryScreen) }, '📖 Glosarium')),
+      h('button', { class: 'btn primary', onclick: () => go(puzzleList) }, tr(`🧩 Tactics practice (${solvedCount()}/${PUZZLES.length})`, `🧩 Latihan taktik (${solvedCount()}/${PUZZLES.length})`)),
+      h('button', { class: 'btn', onclick: () => go(glossaryScreen) }, tr('📖 Glossary', '📖 Glosarium'))),
     ...sections,
   );
   return { el };
 }
 
 export function lessonScreen(id: string): Screen {
-  const lesson = LESSONS.find((l) => l.id === id);
-  if (!lesson) return lessonList();
-  const idx = LESSONS.indexOf(lesson);
-  const next: Lesson | undefined = LESSONS[idx + 1];
+  const base = LESSONS.find((l) => l.id === id);
+  if (!base) return lessonList();
+  const lesson = lessonView(base);
+  const idx = LESSONS.indexOf(base);
+  const next: Lesson | undefined = LESSONS[idx + 1] ? lessonView(LESSONS[idx + 1]!) : undefined;
   const done = loadDone();
 
   const el = h('div', { class: 'screen lesson' },
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(lessonList) }, '←'),
+      h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(lessonList) }, '←'),
       h('h2', {}, lesson.title)),
-    h('small', {}, `${CATEGORY_LABEL[lesson.category].icon} ${CATEGORY_LABEL[lesson.category].title}`),
+    h('small', {}, `${categoryView(lesson.category).icon} ${categoryView(lesson.category).title}`),
   );
 
   let cleanup: (() => void) | undefined;
@@ -90,13 +93,13 @@ export function lessonScreen(id: string): Screen {
   el.append(
     h('div', { class: 'lesson-text' }, ...lesson.body.map((p) => h('p', {}, p))),
     h('div', { class: 'card' },
-      h('strong', {}, 'Poin penting'),
+      h('strong', {}, tr('Key points', 'Poin penting')),
       h('ul', { class: 'points' }, ...lesson.points.map((p) => h('li', {}, p)))),
   );
 
   const doneBtn = h('button', { class: 'btn' });
   const paint = () => {
-    doneBtn.textContent = done.has(lesson.id) ? '✔ Selesai (ketuk untuk batal)' : 'Tandai selesai';
+    doneBtn.textContent = done.has(lesson.id) ? tr('✔ Completed (tap to undo)', '✔ Selesai (ketuk untuk batal)') : tr('Mark as complete', 'Tandai selesai');
     doneBtn.classList.toggle('primary', !done.has(lesson.id));
   };
   doneBtn.onclick = () => {
@@ -109,7 +112,7 @@ export function lessonScreen(id: string): Screen {
   el.append(
     h('div', { class: 'row' },
       doneBtn,
-      next && h('button', { class: 'btn', onclick: () => go(() => lessonScreen(next.id)) }, 'Pelajaran berikutnya →')),
+      next && h('button', { class: 'btn', onclick: () => go(() => lessonScreen(next.id)) }, tr('Next lesson →', 'Pelajaran berikutnya →'))),
   );
   return { el, destroy: () => cleanup?.() };
 }
@@ -122,10 +125,10 @@ function demoPlayer(demo: Demo): HTMLElement {
   const board = new Board(() => undefined);
   const note = h('div', { class: 'card demo-note' });
   const counter = h('small', { class: 'demo-counter' });
-  const prev = h('button', { class: 'btn', 'aria-label': 'Langkah sebelumnya', onclick: () => step(-1) }, '◀');
-  const nextBtn = h('button', { class: 'btn primary', 'aria-label': 'Langkah berikutnya', onclick: () => step(1) }, '▶');
-  const reset = h('button', { class: 'btn', onclick: () => { n = 0; show(); } }, '⟲ Ulang');
-  const flipBtn = h('button', { class: 'btn', 'aria-label': 'Balik papan', onclick: () => { flip = !flip; show(); } }, '⇅');
+  const prev = h('button', { class: 'btn', 'aria-label': tr('Previous step', 'Langkah sebelumnya'), onclick: () => step(-1) }, '◀');
+  const nextBtn = h('button', { class: 'btn primary', 'aria-label': tr('Next step', 'Langkah berikutnya'), onclick: () => step(1) }, '▶');
+  const reset = h('button', { class: 'btn', onclick: () => { n = 0; show(); } }, tr('⟲ Restart', '⟲ Ulang'));
+  const flipBtn = h('button', { class: 'btn', 'aria-label': tr('Flip board', 'Balik papan'), onclick: () => { flip = !flip; show(); } }, '⇅');
 
   function step(d: number) {
     n = Math.min(total, Math.max(0, n + d));
@@ -146,7 +149,7 @@ function demoPlayer(demo: Demo): HTMLElement {
       ...(cur?.san ? [h('strong', {}, cur.san)] : []),
       h('p', {}, cur ? cur.note : demo.intro),
     );
-    counter.textContent = total ? `Langkah ${n} dari ${total}` : '';
+    counter.textContent = total ? tr(`Step ${n} of ${total}`, `Langkah ${n} dari ${total}`) : '';
     prev.toggleAttribute('disabled', n === 0);
     nextBtn.toggleAttribute('disabled', n === total);
   }
@@ -164,18 +167,19 @@ function demoPlayer(demo: Demo): HTMLElement {
 
 export function glossaryScreen(): Screen {
   const listBox = h('div', { class: 'list' });
-  const search = h('input', { type: 'search', placeholder: 'Cari istilah…', 'aria-label': 'Cari istilah' }) as HTMLInputElement;
+  const search = h('input', { type: 'search', placeholder: tr('Search terms…', 'Cari istilah…'), 'aria-label': tr('Search terms', 'Cari istilah') }) as HTMLInputElement;
 
   const render = () => {
     const q = search.value.trim().toLowerCase();
-    const rows = GLOSSARY.filter((g) => !q || g.term.toLowerCase().includes(q) || (g.en ?? '').toLowerCase().includes(q) || g.def.toLowerCase().includes(q))
-      .sort((a, b) => a.term.localeCompare(b.term, 'id'));
+    const rows = GLOSSARY.map(glossaryView)
+      .filter((g) => !q || g.search.includes(q))
+      .sort((a, b) => a.term.localeCompare(b.term, currentLang()));
     listBox.replaceChildren(
       ...(rows.length === 0
-        ? [h('p', { class: 'muted' }, 'Istilah tidak ditemukan.')]
+        ? [h('p', { class: 'muted' }, tr('No terms found.', 'Istilah tidak ditemukan.'))]
         : rows.map((g) =>
             h('div', { class: 'card gloss' },
-              h('strong', {}, g.term, g.en && g.en.toLowerCase() !== g.term.toLowerCase() ? h('small', {}, ` · ${g.en}`) : null),
+              h('strong', {}, g.term, g.alt ? h('small', {}, ` · ${g.alt}`) : null),
               h('p', {}, g.def)))),
     );
   };
@@ -184,8 +188,8 @@ export function glossaryScreen(): Screen {
 
   const el = h('div', { class: 'screen' },
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(lessonList) }, '←'),
-      h('h2', {}, 'Glosarium')),
+      h('button', { class: 'btn ghost', 'aria-label': tr('Back', 'Kembali'), onclick: () => go(lessonList) }, '←'),
+      h('h2', {}, tr('Glossary', 'Glosarium'))),
     h('div', { class: 'field' }, search),
     listBox,
   );
@@ -204,16 +208,16 @@ function practicePanel(demo: Demo): { el: HTMLElement; destroy: () => void } {
   const feedback = h('div', { class: 'card demo-note' });
   const progress = h('small', { class: 'demo-counter' });
   const body = h('div', { class: 'practice-body' });
-  const box = h('details', { class: 'practice' }, h('summary', {}, '🎯 Latih sendiri'), body);
+  const box = h('details', { class: 'practice' }, h('summary', {}, tr('🎯 Practise it yourself', '🎯 Latih sendiri')), body);
 
   function menu() {
     window.clearTimeout(timer);
     session = null;
     body.replaceChildren(
-      h('p', { class: 'muted' }, 'Mainkan teori ini sendiri: pilih sisi, lalu temukan langkah yang benar. Lawan membalas otomatis.'),
+      h('p', { class: 'muted' }, tr('Play this theory yourself: choose a side, then find the correct moves. The opponent replies automatically.', 'Mainkan teori ini sendiri: pilih sisi, lalu temukan langkah yang benar. Lawan membalas otomatis.')),
       h('div', { class: 'row' },
-        h('button', { class: 'btn primary', onclick: () => start('w') }, 'Main sebagai Putih'),
-        h('button', { class: 'btn primary', onclick: () => start('b') }, 'Main sebagai Hitam')),
+        h('button', { class: 'btn primary', onclick: () => start('w') }, tr('Play as White', 'Main sebagai Putih')),
+        h('button', { class: 'btn primary', onclick: () => start('b') }, tr('Play as Black', 'Main sebagai Hitam'))),
     );
   }
 
@@ -221,22 +225,22 @@ function practicePanel(demo: Demo): { el: HTMLElement; destroy: () => void } {
     window.clearTimeout(timer);
     session = new PracticeSession(demo, side);
     last = null; hint = null; busy = false;
-    feedback.replaceChildren(h('p', {}, `Anda ${side === 'w' ? 'Putih' : 'Hitam'}. ${demo.intro}`));
+    feedback.replaceChildren(h('p', {}, tr(`You are ${side === 'w' ? 'White' : 'Black'}. ${demo.intro}`, `Anda ${side === 'w' ? 'Putih' : 'Hitam'}. ${demo.intro}`)));
     body.replaceChildren(board.el, progress, feedback, actions);
     draw();
     scheduleOpponent();
   }
 
-  const hintBtn = h('button', { class: 'btn', onclick: () => showHint() }, '💡 Petunjuk');
-  const againBtn = h('button', { class: 'btn', onclick: () => session && start(session.side) }, '⟲ Ulangi');
-  const backBtn = h('button', { class: 'btn', onclick: () => menu() }, 'Ganti sisi');
+  const hintBtn = h('button', { class: 'btn', onclick: () => showHint() }, tr('💡 Hint', '💡 Petunjuk'));
+  const againBtn = h('button', { class: 'btn', onclick: () => session && start(session.side) }, tr('⟲ Retry', '⟲ Ulangi'));
+  const backBtn = h('button', { class: 'btn', onclick: () => menu() }, tr('Change side', 'Ganti sisi'));
   const actions = h('div', { class: 'row' });
 
   function draw() {
     const s = session!;
     board.set(s.chess, { flip: s.side === 'b', last, hint, movable: busy || s.finished ? null : s.side });
     const done = s.demo.steps.filter((_, i) => i < s.step).length;
-    progress.textContent = `Langkah ${done} dari ${s.total}${s.mistakes ? ` · ${s.mistakes} kesalahan` : ''}`;
+    progress.textContent = tr(`Step ${done} of ${s.total}${s.mistakes ? ` · ${s.mistakes} mistake(s)` : ''}`, `Langkah ${done} dari ${s.total}${s.mistakes ? ` · ${s.mistakes} kesalahan` : ''}`);
     actions.replaceChildren(...(s.finished ? [againBtn, backBtn] : [hintBtn, againBtn, backBtn]));
   }
 
@@ -257,8 +261,8 @@ function practicePanel(demo: Demo): { el: HTMLElement; destroy: () => void } {
     const s = session!;
     draw();
     feedback.append(h('p', {}, s.mistakes === 0
-      ? '✔ Sempurna! Teori dimainkan tanpa kesalahan.'
-      : `Selesai dengan ${s.mistakes} kesalahan. Ulangi sampai lancar.`));
+      ? tr('✔ Perfect! The theory was played without a single mistake.', '✔ Sempurna! Teori dimainkan tanpa kesalahan.')
+      : tr(`Finished with ${s.mistakes} mistake(s). Repeat until it flows.`, `Selesai dengan ${s.mistakes} kesalahan. Ulangi sampai lancar.`)));
   }
 
   function attempt(from: string, to: string, promo?: string) {
@@ -268,7 +272,7 @@ function practicePanel(demo: Demo): { el: HTMLElement; destroy: () => void } {
     if (r.result === 'illegal' || r.result === 'blocked') { draw(); return; }
     if (r.result === 'wrong') {
       hint = null;
-      feedback.replaceChildren(h('strong', {}, 'Bukan langkah teori'), h('p', {}, 'Langkah itu legal, tetapi bukan yang dimainkan di variasi ini. Coba lagi atau minta petunjuk.'));
+      feedback.replaceChildren(h('strong', {}, tr('Not a theory move', 'Bukan langkah teori')), h('p', {}, tr('That move is legal, but it is not the one played in this variation. Try again or ask for a hint.', 'Langkah itu legal, tetapi bukan yang dimainkan di variasi ini. Coba lagi atau minta petunjuk.')));
       draw();
       return;
     }
@@ -284,7 +288,7 @@ function practicePanel(demo: Demo): { el: HTMLElement; destroy: () => void } {
     const e = session?.expected();
     if (!e) return;
     hint = [e.from];
-    feedback.replaceChildren(h('strong', {}, 'Petunjuk'), h('p', {}, 'Gerakkan buah yang disorot.'));
+    feedback.replaceChildren(h('strong', {}, tr('Hint', 'Petunjuk')), h('p', {}, tr('Move the highlighted piece.', 'Gerakkan buah yang disorot.')));
     draw();
   }
 

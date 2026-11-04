@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { menu, noHorizontalScroll, pieces, watchErrors } from './util';
 
 const back = (page: import('@playwright/test').Page) => page.getByRole('button', { name: 'Kembali', exact: true }).click();

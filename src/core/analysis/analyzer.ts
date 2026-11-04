@@ -4,20 +4,22 @@ import type { EngineLine, MoveAnalysis, MoveClass, OpeningInfo } from '../../typ
 import { classify, moveAccuracy, upgradeClass, winLoss, winPercent } from './classifier';
 import { isBookPosition, openingAt } from './openings';
 import { isSacrifice, legalMoveCount } from './tactics';
+import { tr } from '../i18n';
 
 /** Nilai pengganti untuk posisi skakmat (mate 0 tidak punya tanda). */
 const MATE_CP = 10000;
 
+/** Label kategori langkah; getter agar mengikuti bahasa yang sedang dipakai. */
 export const CLASS_LABEL: Record<MoveClass, string> = {
-  book: 'Teori',
-  brilliant: 'Brilian',
-  great: 'Hebat',
-  best: 'Terbaik',
-  excellent: 'Sangat baik',
-  good: 'Bagus',
-  inaccuracy: 'Kurang akurat',
-  mistake: 'Kesalahan',
-  blunder: 'Blunder',
+  get book() { return tr('Book', 'Teori'); },
+  get brilliant() { return tr('Brilliant', 'Brilian'); },
+  get great() { return tr('Great', 'Hebat'); },
+  get best() { return tr('Best', 'Terbaik'); },
+  get excellent() { return tr('Excellent', 'Sangat baik'); },
+  get good() { return tr('Good', 'Bagus'); },
+  get inaccuracy() { return tr('Inaccuracy', 'Kurang akurat'); },
+  get mistake() { return tr('Mistake', 'Kesalahan'); },
+  get blunder() { return tr('Blunder', 'Blunder'); },
 };
 
 export const CLASS_SYMBOL: Record<MoveClass, string> = {
@@ -59,30 +61,42 @@ export function uciToSan(fen: string, uci: string): string {
 }
 
 function comment(cls: MoveClass, loss: number, bestSan: string, opening?: OpeningInfo): string {
-  const best = bestSan ? ` Langkah terbaik: ${bestSan}.` : '';
+  const best = bestSan ? tr(` Best move: ${bestSan}.`, ` Langkah terbaik: ${bestSan}.`) : '';
   const pct = `${loss.toFixed(0)}%`;
   switch (cls) {
     case 'book':
-      return opening ? `Langkah teori: ${opening.name} (${opening.eco}).` : 'Langkah teori opening.';
+      return opening
+        ? tr(`Book move: ${opening.name} (${opening.eco}).`, `Langkah teori: ${opening.name} (${opening.eco}).`)
+        : tr('Opening book move.', 'Langkah teori opening.');
     case 'brilliant':
-      return 'Brilian! Pengorbanan material yang tepat dan tetap langkah terbaik.';
+      return tr('Brilliant! A well-timed material sacrifice that is still the best move.', 'Brilian! Pengorbanan material yang tepat dan tetap langkah terbaik.');
     case 'great':
-      return 'Hebat! Langkah terbaik yang jelas unggul: menurut engine, alternatif terbaik berikutnya jauh lebih buruk.';
+      return tr(
+        'Great! A clearly standout best move: the engine says the next best alternative is much worse.',
+        'Hebat! Langkah terbaik yang jelas unggul: menurut engine, alternatif terbaik berikutnya jauh lebih buruk.');
     case 'best':
-      return 'Langkah terbaik, sama dengan pilihan engine.';
+      return tr("Best move, the same as the engine's choice.", 'Langkah terbaik, sama dengan pilihan engine.');
     case 'excellent':
-      return `Sangat baik, nyaris setara langkah terbaik.${best}`;
+      return tr(`Excellent, nearly as good as the best move.${best}`, `Sangat baik, nyaris setara langkah terbaik.${best}`);
     case 'good':
-      return `Langkah bagus, tapi ada yang sedikit lebih baik.${best}`;
+      return tr(`A good move, but there was a slightly better one.${best}`, `Langkah bagus, tapi ada yang sedikit lebih baik.${best}`);
     case 'inaccuracy':
-      return `Kurang akurat, peluang menang turun ±${pct}.${best}`;
+      return tr(`Inaccuracy, win chance dropped by about ${pct}.${best}`, `Kurang akurat, peluang menang turun ±${pct}.${best}`);
     case 'mistake':
-      return `Kesalahan, peluang menang turun ±${pct}.${best}`;
+      return tr(`Mistake, win chance dropped by about ${pct}.${best}`, `Kesalahan, peluang menang turun ±${pct}.${best}`);
     case 'blunder':
-      return `Blunder! Peluang menang turun ±${pct}.${best}`;
+      return tr(`Blunder! Win chance dropped by about ${pct}.${best}`, `Blunder! Peluang menang turun ±${pct}.${best}`);
     default:
       return '';
   }
+}
+
+/**
+ * Komentar untuk satu langkah, dihitung saat ditampilkan dari data yang tersimpan, sehingga partai lama
+ * pun mengikuti bahasa yang dipilih (field `comment` yang tersimpan tidak dipakai untuk tampilan).
+ */
+export function commentFor(a: MoveAnalysis): string {
+  return comment(a.classification, a.winLossPct, a.uci === a.engineBest.uci ? '' : a.engineBest.san, a.opening);
 }
 
 export class Analyzer {

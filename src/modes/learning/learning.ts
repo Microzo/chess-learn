@@ -7,6 +7,7 @@ import { statusOf, toPgn, type Result } from '../../core/game/game';
 import { newId, saveGame } from '../../core/storage/games';
 import type { MoveAnalysis } from '../../types';
 import { Board } from '../../ui/board/board';
+import { tr } from '../../core/i18n';
 import { h } from '../../ui/dom';
 import { boardWithBar, gameLayout } from '../../ui/layout';
 import { analysisCard, badge, EvalBar, MoveList } from '../../ui/panels/panels';
@@ -20,37 +21,39 @@ export function learningSetup(): Screen {
 
   const colorBtns = (['w', 'r', 'b'] as const).map((c) =>
     h('button', { class: 'chip', 'data-v': c, onclick: () => { color = c; sync(); } },
-      c === 'w' ? '♔ Putih' : c === 'b' ? '♚ Hitam' : '🎲 Acak'),
+      c === 'w' ? tr('♔ White', '♔ Putih') : c === 'b' ? tr('♚ Black', '♚ Hitam') : tr('🎲 Random', '🎲 Acak')),
   );
   const levelBtns = BOT_LEVELS.map((l) =>
     h('button', { class: 'chip', 'data-v': l.id, onclick: () => { level = l.id; sync(); } },
       h('b', {}, `${l.id}`), ` ${l.name} `, h('small', {}, l.hint)),
   );
-  const guideBtns = ([[true, '🧭 Dengan panduan'], [false, '🎯 Tanpa panduan']] as const).map(([v, label]) =>
+  const guideBtns = ([[true, tr('🧭 With guidance', '🧭 Dengan panduan')], [false, tr('🎯 No guidance', '🎯 Tanpa panduan')]] as const).map(([v, label]) =>
     h('button', { class: 'chip', 'data-v': v ? 'guide' : 'free', onclick: () => { guided = v; sync(); } }, label));
   const guideNote = h('p', { class: 'muted guide-note' });
   const sync = () => {
     guideBtns.forEach((b) => b.classList.toggle('on', (b.dataset.v === 'guide') === guided));
     guideNote.textContent = guided
-      ? 'Setiap langkahmu langsung dianalisa (opening, terbaik, kesalahan, blunder), ada bar dominasi dan tombol Saran.'
-      : 'Main murni melawan bot: tanpa analisa, tanpa bar, tanpa saran. Partai tetap tersimpan, analisa nanti lewat Replay.';
+      ? tr('Every move you make is analysed instantly (opening, best, mistake, blunder), with an advantage bar and a Hint button.',
+          'Setiap langkahmu langsung dianalisa (opening, terbaik, kesalahan, blunder), ada bar dominasi dan tombol Saran.')
+      : tr('Pure play against the bot: no analysis, no bar, no hints. The game is still saved and can be analysed later in Replay.',
+          'Main murni melawan bot: tanpa analisa, tanpa bar, tanpa saran. Partai tetap tersimpan, analisa nanti lewat Replay.');
     colorBtns.forEach((b) => b.classList.toggle('on', b.dataset.v === color));
     levelBtns.forEach((b) => b.classList.toggle('on', b.dataset.v === String(level)));
   };
   sync();
 
   const el = h('div', { class: 'screen' },
-    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, 'Belajar vs Bot')),
-    h('h3', {}, 'Mode'), h('div', { class: 'chips' }, ...guideBtns), guideNote,
-    h('h3', {}, 'Warna'), h('div', { class: 'chips' }, ...colorBtns),
-    h('h3', {}, 'Level bot'), h('div', { class: 'chips' }, ...levelBtns),
+    h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, tr('Learn vs Bot', 'Belajar vs Bot'))),
+    h('h3', {}, tr('Mode', 'Mode')), h('div', { class: 'chips' }, ...guideBtns), guideNote,
+    h('h3', {}, tr('Colour', 'Warna')), h('div', { class: 'chips' }, ...colorBtns),
+    h('h3', {}, tr('Bot level', 'Level bot')), h('div', { class: 'chips' }, ...levelBtns),
     h('button', {
       class: 'btn primary big',
       onclick: () => {
         const p = color === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : color;
         go(() => learningGame(p, BOT_LEVELS.find((l) => l.id === level)!, guided));
       },
-    }, 'Mulai'),
+    }, tr('Start', 'Mulai')),
   );
   return { el };
 }
@@ -67,6 +70,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
   const createdAt = Date.now();
   const analyses: MoveAnalysis[] = [];
   const botName = `Bot ${level.name}`;
+  const youName = tr('You', 'Kamu');
 
   let busy = true;
   let destroyed = false;
@@ -77,14 +81,14 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
   const board = new Board((f, t, p) => void playerMove(f, t, p));
   const evalBar = new EvalBar();
   evalBar.setFlip(player === 'b');
-  const status = h('div', { class: 'status' }, 'Memuat engine…');
+  const status = h('div', { class: 'status' }, tr('Loading engine…', 'Memuat engine…'));
   const cardBox = h('div', { class: 'cardbox' }, analysisCard(null));
   const botLine = h('div', { class: 'botline muted' });
   const endBox = h('div', {});
   const moves = new MoveList();
-  const hintBtn = h('button', { class: 'btn', onclick: () => void showHint() }, '💡 Saran');
-  const undoBtn = h('button', { class: 'btn', onclick: () => undo() }, '↶ Ulangi');
-  const resignBtn = h('button', { class: 'btn danger', onclick: () => resign() }, '🏳 Menyerah');
+  const hintBtn = h('button', { class: 'btn', onclick: () => void showHint() }, tr('💡 Hint', '💡 Saran'));
+  const undoBtn = h('button', { class: 'btn', onclick: () => undo() }, tr('↶ Take back', '↶ Ulangi'));
+  const resignBtn = h('button', { class: 'btn danger', onclick: () => resign() }, tr('🏳 Resign', '🏳 Menyerah'));
 
   const isOver = () => resigned !== null || statusOf(chess).over;
 
@@ -94,7 +98,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
     const n = chess.history().length;
     moves.render(chess.history(), analyses, n);
     const st = statusOf(chess);
-    status.textContent = resigned ? 'Kamu menyerah.' : busy && !over ? status.textContent : st.text;
+    status.textContent = resigned ? tr('You resigned.', 'Kamu menyerah.') : busy && !over ? status.textContent : st.text;
     for (const b of [hintBtn, undoBtn, resignBtn]) (b as HTMLButtonElement).disabled = busy || over;
   }
 
@@ -103,9 +107,9 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
     const result = resigned ?? statusOf(chess).result;
     saveGame({
       id, mode: 'learning', createdAt,
-      white: player === 'w' ? 'Kamu' : botName,
-      black: player === 'b' ? 'Kamu' : botName,
-      pgn: toPgn(chess, player === 'w' ? 'Kamu' : botName, player === 'b' ? 'Kamu' : botName, result),
+      white: player === 'w' ? youName : botName,
+      black: player === 'b' ? youName : botName,
+      pgn: toPgn(chess, player === 'w' ? youName : botName, player === 'b' ? youName : botName, result),
       result,
       ...(guided ? { analysis: analyses.slice(), accuracy: accuracyOf(analyses) } : {}),
     });
@@ -119,11 +123,13 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
     const mine = player === 'w' ? acc.white : acc.black;
     endBox.replaceChildren(
       h('div', { class: 'card end' },
-        h('strong', {}, resigned ? 'Kamu menyerah.' : statusOf(chess).text),
-        guided ? h('p', {}, `Akurasimu: ${mine.toFixed(0)}%`) : h('p', { class: 'muted' }, 'Mode tanpa panduan: tekan Replay & analisa untuk melihat kualitas langkahmu.'),
+        h('strong', {}, resigned ? tr('You resigned.', 'Kamu menyerah.') : statusOf(chess).text),
+        guided
+          ? h('p', {}, tr(`Your accuracy: ${mine.toFixed(0)}%`, `Akurasimu: ${mine.toFixed(0)}%`))
+          : h('p', { class: 'muted' }, tr('No-guidance mode: press Replay & analysis to see how well you played.', 'Mode tanpa panduan: tekan Replay & analisa untuk melihat kualitas langkahmu.')),
         h('div', { class: 'row' },
-          h('button', { class: 'btn primary', onclick: () => go(() => replayScreen(id)) }, 'Replay & analisa'),
-          h('button', { class: 'btn', onclick: () => go(learningSetup) }, 'Main lagi'),
+          h('button', { class: 'btn primary', onclick: () => go(() => replayScreen(id)) }, tr('Replay & analysis', 'Replay & analisa')),
+          h('button', { class: 'btn', onclick: () => go(learningSetup) }, tr('Play again', 'Main lagi')),
         ),
       ),
     );
@@ -137,7 +143,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
     const m = chess.move({ from, to, ...(promo ? { promotion: promo } : {}) });
     last = [from, to];
     if (guided) {
-      status.textContent = 'Menganalisa…';
+      status.textContent = tr('Analysing…', 'Menganalisa…');
       cardBox.replaceChildren(analysisCard(null, { pending: true }));
     }
     draw();
@@ -161,7 +167,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
 
   async function botTurn() {
     busy = true;
-    status.textContent = `${botName} berpikir…`;
+    status.textContent = tr(`${botName} is thinking…`, `${botName} berpikir…`);
     draw();
     try {
       const fenBefore = chess.fen();
@@ -203,7 +209,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
       const u = line.bestMoveUci;
       hint = [u.slice(0, 2), u.slice(2, 4)];
       const san = new Chess(chess.fen()).move({ from: hint[0], to: hint[1], ...(u[4] ? { promotion: u[4] } : {}) }).san;
-      cardBox.replaceChildren(h('div', { class: 'card' }, h('strong', {}, `Saran engine: ${san}`), h('p', { class: 'muted' }, 'Petak asal dan tujuan ditandai di papan.')));
+      cardBox.replaceChildren(h('div', { class: 'card' }, h('strong', {}, tr(`Engine hint: ${san}`, `Saran engine: ${san}`)), h('p', { class: 'muted' }, tr('The from and to squares are highlighted on the board.', 'Petak asal dan tujuan ditandai di papan.'))));
     } catch (e) {
       return fail(e);
     }
@@ -218,7 +224,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
     if (n < count + (player === 'b' ? 1 : 0)) return;
     for (let i = 0; i < count; i++) { chess.undo(); analyses.pop(); }
     last = null; hint = null;
-    cardBox.replaceChildren(analysisCard(null, { title: 'Langkah diulang. Coba langkah lain!' }));
+    cardBox.replaceChildren(analysisCard(null, { title: tr('Move taken back. Try another move!', 'Langkah diulang. Coba langkah lain!') }));
     botLine.replaceChildren();
     const lastA = analyses[analyses.length - 1];
     evalBar.set(lastA ? lastA.evalAfter : { cp: 0, mate: null });
@@ -227,7 +233,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
   }
 
   function resign() {
-    if (busy || isOver() || !confirm('Menyerah dan akhiri partai?')) return;
+    if (busy || isOver() || !confirm(tr('Resign and end the game?', 'Menyerah dan akhiri partai?'))) return;
     resigned = player === 'w' ? '0-1' : '1-0';
     finish();
   }
@@ -235,14 +241,14 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
   function fail(e: unknown) {
     console.error(e);
     busy = true;
-    status.textContent = 'Engine bermasalah. Muat ulang halaman.';
+    status.textContent = tr('Engine problem. Please reload the page.', 'Engine bermasalah. Muat ulang halaman.');
     cardBox.replaceChildren(h('div', { class: 'card cls-blunder' }, `Error: ${(e as Error).message}`));
   }
 
   const el = gameLayout(
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'),
-      h('h2', {}, `Belajar · ${botName}`)),
+      h('h2', {}, tr(`Learn · ${botName}`, `Belajar · ${botName}`))),
     [guided ? boardWithBar(evalBar.el, board.el) : board.el, status],
     guided
       ? [cardBox, botLine, h('div', { class: 'row' }, hintBtn, undoBtn, resignBtn), endBox, moves.el]

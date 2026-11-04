@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { clickMove, LEGAL_PGN, menu, noHorizontalScroll, pieces, watchErrors } from './util';
 
 const bg = (page: import('@playwright/test').Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
