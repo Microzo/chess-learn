@@ -82,7 +82,9 @@ export function positionalNotes(fenBefore: string, fenAfter: string, uci: string
     out.push(tr('The pawn takes space in the centre, which gives the pieces more room.', 'Bidak merebut ruang di pusat, sehingga buah-buah lain punya ruang gerak lebih.'));
   }
 
-  // struktur bidak
+  // struktur bidak (dilewati bila ini pertukaran yang bisa langsung dibalas: strukturnya belum final)
+  const exchange = !!before.get(to as never) && after.isAttacked(to as never, opp);
+  if (!exchange) {
   const pb = pawnInfo(bb, side); const pa = pawnInfo(ab, side);
   if (pa.doubled > pb.doubled) out.push(tr('It creates doubled pawns, a structural weakness that is hard to undo.', 'Menciptakan bidak ganda, kelemahan struktur yang sulit diperbaiki.'));
   if (pa.isolated > pb.isolated) out.push(tr('It leaves an isolated pawn with no neighbouring pawns to defend it.', 'Meninggalkan bidak terisolasi tanpa bidak tetangga yang membelanya.'));
@@ -90,6 +92,8 @@ export function positionalNotes(fenBefore: string, fenAfter: string, uci: string
   const ob = pawnInfo(bb, opp); const oa = pawnInfo(ab, opp);
   if (oa.doubled > ob.doubled) out.push(tr('It forces the opponent into doubled pawns.', 'Memaksa lawan memiliki bidak ganda.'));
   if (oa.isolated > ob.isolated) out.push(tr('It leaves the opponent with an isolated pawn.', 'Membuat lawan memiliki bidak terisolasi.'));
+
+  }
 
   // pasangan gajah
   if (bishops(bb, opp) === 2 && bishops(ab, opp) < 2) out.push(tr("It removes the opponent's bishop pair.", 'Menghilangkan pasangan gajah lawan.'));
@@ -109,7 +113,7 @@ export function positionalNotes(fenBefore: string, fenAfter: string, uci: string
   const kr = king?.square[1];
   const castled = kr === (side === 'w' ? '1' : '8') && (kf >= 6 || kf <= 2) && kf !== 3 && kf !== 4;
   if (castled && piece.type === 'p' && piece.color === side && (to[0] === 'f' || to[0] === 'g' || to[0] === 'h' || to[0] === 'a' || to[0] === 'b' || to[0] === 'c') && Math.abs(FILES.indexOf(to[0]!) - kf) <= 1 && from[0] === to[0]) {
-    out.push(tr('Moving a pawn in front of the castled king weakens its shelter.', 'Menggerakkan bidak di depan raja yang sudah rokade melemahkan perlindungannya.'));
+    out.push(tr('A pawn move in front of the castled king loosens its shelter, so it needs a concrete purpose.', 'Gerakan bidak di depan raja yang sudah rokade melonggarkan perlindungannya, jadi perlu tujuan yang jelas.'));
   }
   if (!castled && piece.type === 'k' && ply <= 30 && Math.abs(from.charCodeAt(0) - to.charCodeAt(0)) <= 1) {
     out.push(tr('The king moves without castling, so it loses castling rights and may be exposed.', 'Raja berjalan tanpa rokade, sehingga kehilangan hak rokade dan bisa terbuka.'));
@@ -117,9 +121,8 @@ export function positionalNotes(fenBefore: string, fenAfter: string, uci: string
 
   // mobilitas
   const mb = mobility(fenBefore, side); const ma = mobility(fenAfter, side);
-  if (mb !== null && ma !== null && !out.length) {
-    if (ma - mb >= 4) out.push(tr(`It frees the pieces: ${ma} possible moves instead of ${mb}.`, `Membebaskan buah-buah: ${ma} langkah mungkin, sebelumnya ${mb}.`));
-    else if (mb - ma >= 4) out.push(tr(`It restricts its own pieces: possible moves drop from ${mb} to ${ma}.`, `Membatasi buah sendiri: langkah mungkin turun dari ${mb} menjadi ${ma}.`));
+  if (mb !== null && ma !== null && !out.length && !after.inCheck()) {
+    if (ma - mb >= 8) out.push(tr(`It frees the pieces: ${ma} possible moves instead of ${mb}.`, `Membebaskan buah-buah: ${ma} langkah mungkin, sebelumnya ${mb}.`));
   }
 
   // pinggir papan di opening
