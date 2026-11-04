@@ -1,7 +1,17 @@
 /// <reference types="vitest/config" />
 import { defineConfig, type Plugin } from 'vite';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { join, relative } from 'node:path';
+
+/** Info build untuk ditampilkan di UI: versi package, commit pendek, dan tanggal build. */
+function buildInfo() {
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string };
+  let sha = (process.env.GITHUB_SHA ?? '').slice(0, 7);
+  if (!sha) { try { sha = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { sha = 'dev'; } }
+  return { version: pkg.version, sha: sha || 'dev', date: new Date().toISOString().slice(0, 10) };
+}
+const BUILD = buildInfo();
 
 /**
  * Content-Security-Policy untuk build produksi (GitHub Pages tidak bisa mengatur header, jadi lewat meta).
@@ -62,6 +72,7 @@ function precacheManifest(): Plugin {
 
 export default defineConfig({
   base: './', // path relatif: bisa di-host di subfolder (GitHub Pages) maupun root
+  define: { __APP_VERSION__: JSON.stringify(BUILD.version), __APP_BUILD__: JSON.stringify(BUILD.sha), __APP_DATE__: JSON.stringify(BUILD.date) },
   plugins: [securityHeaders(), precacheManifest()],
   // Hanya localhost secara bawaan; untuk membuka dari HP lewat Wi-Fi jalankan `npm run dev -- --host` (jaringan tepercaya saja).
   server: { port: 5173 },

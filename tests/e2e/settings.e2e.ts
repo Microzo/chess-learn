@@ -194,3 +194,12 @@ test.describe('Belajar vs Bot: bar vertikal, gulir, dan mode panduan', () => {
     await expect(page.locator('.guide-note')).toContainText('tanpa bar');
   });
 });
+
+test('versi tampil di beranda dan Pengaturan, tombol cek pembaruan menjawab', async ({ page }) => {
+  await page.goto('./');
+  await expect(page.getByTestId('version')).toHaveText(/^v\d+\.\d+\.\d+ · \S+ · \d{4}-\d{2}-\d{2}$/);
+  await page.getByRole('button', { name: /Pengaturan/ }).click();
+  await expect(page.getByTestId('version')).toBeVisible();
+  await page.getByRole('button', { name: 'Cek pembaruan' }).click();
+  await expect(page.locator('[role="status"]').filter({ hasText: /terbaru|ditemukan|terpasang/ })).toBeVisible();
+});

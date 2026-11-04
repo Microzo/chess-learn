@@ -1,5 +1,7 @@
 import { go, type Screen } from '../../app/router';
+import { checkForUpdate } from '../../app/update';
 import { tr } from '../../core/i18n';
+import { versionLabel } from '../../core/version';
 import { BOARD_THEMES, LANGS, getSettings, resetSettings, updateSettings, type BoardTheme, type Lang, type Theme } from '../../core/settings';
 import { h } from '../dom';
 import { play } from '../sound';
@@ -44,6 +46,15 @@ export function settingsScreen(): Screen {
     vol.oninput = () => { updateSettings({ volume: Number(vol.value) / 100 }); volLabel.textContent = `${vol.value}%`; };
     vol.onchange = () => play('move'); // contoh suara setelah geser selesai
     const volLabel = h('small', {}, `${vol.value}%`);
+    const updateMsg = h('small', { role: 'status' });
+    const updateBtn = h('button', { class: 'btn', onclick: () => {
+      updateMsg.textContent = tr('Checking…', 'Memeriksa…');
+      void checkForUpdate().then((r) => {
+        updateMsg.textContent = r === 'updated' ? tr('New version found. Use the Reload button at the bottom.', 'Versi baru ditemukan. Pakai tombol Muat ulang di bawah.')
+          : r === 'current' ? tr('You are on the latest version.', 'Kamu sudah di versi terbaru.')
+          : tr('Updates are checked only in the installed web app.', 'Pembaruan hanya dicek di aplikasi web yang terpasang.');
+      });
+    } }, tr('Check for updates', 'Cek pembaruan'));
 
     box.replaceChildren(
       h('section', { class: 'card' },
@@ -65,6 +76,10 @@ export function settingsScreen(): Screen {
         h('h3', {}, tr('Sound', 'Suara')),
         toggle('set-sound', tr('Sound effects', 'Efek suara'), tr('Plays when pieces move or capture, on check, and when the game ends', 'Bunyi saat bidak bergerak, memakan, skak, dan partai berakhir'), !s.muted, (v) => { updateSettings({ muted: !v }); if (v) play('move'); }),
         h('div', { class: 'field' }, h('small', {}, tr('Volume', 'Volume')), h('div', { class: 'row vol-row' }, vol, volLabel))),
+      h('section', { class: 'card' },
+        h('h3', {}, tr('About', 'Tentang')),
+        h('div', { class: 'field' }, h('small', {}, tr('Version', 'Versi')), h('strong', { 'data-testid': 'version' }, versionLabel())),
+        h('div', { class: 'row' }, updateBtn, updateMsg)),
       h('button', { class: 'btn danger', onclick: () => { resetSettings(); go(settingsScreen); } }, tr('Reset to defaults', 'Kembalikan ke bawaan')),
     );
   };

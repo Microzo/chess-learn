@@ -7,6 +7,7 @@ import { lessonList } from '../../modes/lessons/lessons';
 import { pvpSetup } from '../../modes/pvp/pvp';
 import { replayList } from '../../modes/replay/replay';
 import { tr } from '../../core/i18n';
+import { versionLabel } from '../../core/version';
 import { h } from '../dom';
 import { settingsScreen } from './settings';
 
@@ -34,6 +35,7 @@ export function homeScreen(): Screen {
       h('a', { href: `${import.meta.env.BASE_URL}licenses/README.txt`, target: '_blank', rel: 'noopener' }, tr('Licenses and attribution', 'Lisensi dan atribusi')),
       ' · ',
       h('a', { href: 'https://github.com/Microzo/chess-learn', target: '_blank', rel: 'noopener' }, tr('Source code', 'Kode sumber'))),
+    h('p', { class: 'muted legal version', 'data-testid': 'version' }, versionLabel()),
   );
   return { el };
 }
