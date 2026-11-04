@@ -3,6 +3,7 @@ import type { EngineLine, Evaluation, MoveAnalysis } from '../../types';
 import { tr } from '../i18n';
 import { commentFor, type Analyzer } from './analyzer';
 import { THRESHOLDS, winPercent } from './classifier';
+import { positionalNotes } from './positional';
 import { bestCaptureGain, isSacrifice } from './tactics';
 
 /** Penjelasan mendalam satu langkah: mengapa ia mendapat kategori dan skor tersebut. */
@@ -148,6 +149,9 @@ export function explainFrom(a: MoveAnalysis, before: EngineLine, after: EngineLi
       pts.push(tr('It develops a minor piece from the back rank, in line with opening principles.', 'Mengembangkan bidak ringan dari barisan awal, sesuai prinsip opening.'));
     }
   }
+
+  // ciri posisional (struktur bidak, kolom, raja, mobilitas)
+  if (a.classification !== 'blunder') pts.push(...positionalNotes(a.fenBefore, a.fenAfter, a.uci, a.ply));
 
   // alternatif terbaik
   let bestLine = '';

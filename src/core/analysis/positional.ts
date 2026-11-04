@@ -1,0 +1,130 @@
+import { Chess, type Color } from 'chess.js';
+import { tr } from '../i18n';
+
+/** Catatan posisional untuk langkah `uci` dari `fenBefore`: struktur bidak, kolom, raja, mobilitas. Murni, tanpa engine. */
+
+type Board = ReturnType<Chess['board']>;
+const FILES = 'abcdefgh';
+
+interface PawnInfo { doubled: number; isolated: number; passed: number }
+
+function pawnInfo(board: Board, side: Color): PawnInfo {
+  const mine: number[][] = FILES.split('').map(() => []); // rank index (0 = rank 8) per file
+  const theirs: number[][] = FILES.split('').map(() => []);
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      const c = board[r]![f];
+      if (c?.type === 'p') (c.color === side ? mine : theirs)[f]!.push(r);
+    }
+  }
+  let doubled = 0; let isolated = 0; let passed = 0;
+  for (let f = 0; f < 8; f++) {
+    const m = mine[f]!;
+    if (m.length > 1) doubled += m.length - 1;
+    if (!m.length) continue;
+    const neighbours = [f - 1, f + 1].filter((x) => x >= 0 && x < 8);
+    if (neighbours.every((n) => mine[n]!.length === 0)) isolated += m.length;
+    // bidak lolos: tidak ada bidak lawan di kolom sendiri/sebelah yang berada di depannya
+    for (const r of m) {
+      const ahead = (rr: number) => (side === 'w' ? rr < r : rr > r);
+      const blocked = [f - 1, f, f + 1].some((x) => x >= 0 && x < 8 && theirs[x]!.some(ahead));
+      if (!blocked) passed++;
+    }
+  }
+  return { doubled, isolated, passed };
+}
+
+function bishops(board: Board, side: Color): number {
+  return board.flat().filter((c) => c && c.color === side && c.type === 'b').length;
+}
+
+/** Status kolom bagi benteng di file `f`: 'open' tanpa bidak sama sekali, 'semi' tanpa bidak sendiri. */
+function fileState(board: Board, f: number, side: Color): 'open' | 'semi' | 'closed' {
+  let own = false; let any = false;
+  for (let r = 0; r < 8; r++) {
+    const c = board[r]![f];
+    if (c?.type === 'p') { any = true; if (c.color === side) own = true; }
+  }
+  return !any ? 'open' : !own ? 'semi' : 'closed';
+}
+
+/** Jumlah langkah legal bidak mover seandainya gilirannya; null bila posisi tak dapat dihitung. */
+function mobility(fen: string, side: Color): number | null {
+  try {
+    const parts = fen.split(' ');
+    parts[1] = side; parts[3] = '-';
+    return new Chess(parts.join(' ')).moves().length;
+  } catch {
+    return null;
+  }
+}
+
+export function positionalNotes(fenBefore: string, fenAfter: string, uci: string, ply: number): string[] {
+  const out: string[] = [];
+  let before: Chess; let after: Chess;
+  try {
+    before = new Chess(fenBefore);
+    after = new Chess(fenAfter);
+  } catch {
+    return out;
+  }
+  const side = before.turn();
+  const opp: Color = side === 'w' ? 'b' : 'w';
+  const from = uci.slice(0, 2);
+  const to = uci.slice(2, 4);
+  const piece = before.get(from as never);
+  if (!piece) return out;
+  const bb = before.board();
+  const ab = after.board();
+
+  // pusat
+  if (piece.type === 'p' && 'de'.includes(to[0]!) && (to[1] === '4' || to[1] === '5') && ply <= 20) {
+    out.push(tr('The pawn takes space in the centre, which gives the pieces more room.', 'Bidak merebut ruang di pusat, sehingga buah-buah lain punya ruang gerak lebih.'));
+  }
+
+  // struktur bidak
+  const pb = pawnInfo(bb, side); const pa = pawnInfo(ab, side);
+  if (pa.doubled > pb.doubled) out.push(tr('It creates doubled pawns, a structural weakness that is hard to undo.', 'Menciptakan bidak ganda, kelemahan struktur yang sulit diperbaiki.'));
+  if (pa.isolated > pb.isolated) out.push(tr('It leaves an isolated pawn with no neighbouring pawns to defend it.', 'Meninggalkan bidak terisolasi tanpa bidak tetangga yang membelanya.'));
+  if (pa.passed > pb.passed) out.push(tr('It creates a passed pawn: no enemy pawn can stop it on its way to promotion.', 'Menciptakan bidak lolos: tidak ada bidak lawan yang dapat menghentikannya menuju promosi.'));
+  const ob = pawnInfo(bb, opp); const oa = pawnInfo(ab, opp);
+  if (oa.doubled > ob.doubled) out.push(tr('It forces the opponent into doubled pawns.', 'Memaksa lawan memiliki bidak ganda.'));
+  if (oa.isolated > ob.isolated) out.push(tr('It leaves the opponent with an isolated pawn.', 'Membuat lawan memiliki bidak terisolasi.'));
+
+  // pasangan gajah
+  if (bishops(bb, opp) === 2 && bishops(ab, opp) < 2) out.push(tr("It removes the opponent's bishop pair.", 'Menghilangkan pasangan gajah lawan.'));
+  if (bishops(bb, side) === 2 && bishops(ab, side) < 2) out.push(tr('It gives up its own bishop pair.', 'Melepas pasangan gajah sendiri.'));
+
+  // benteng ke kolom terbuka
+  if (piece.type === 'r' && from[0] !== to[0]) {
+    const f = FILES.indexOf(to[0]!);
+    const st = fileState(ab, f, side);
+    if (st === 'open') out.push(tr(`The rook takes the open ${to[0]}-file, where it can reach the enemy position.`, `Benteng menguasai kolom ${to[0]} yang terbuka, tempat ia dapat menembus posisi lawan.`));
+    else if (st === 'semi') out.push(tr(`The rook goes to the half-open ${to[0]}-file, pressuring the enemy pawn there.`, `Benteng ke kolom ${to[0]} yang setengah terbuka, menekan bidak lawan di sana.`));
+  }
+
+  // keamanan raja
+  const king = ab.flat().find((c) => c?.type === 'k' && c.color === side);
+  const kf = king ? FILES.indexOf(king.square[0]!) : -1;
+  const kr = king?.square[1];
+  const castled = kr === (side === 'w' ? '1' : '8') && (kf >= 6 || kf <= 2) && kf !== 3 && kf !== 4;
+  if (castled && piece.type === 'p' && piece.color === side && (to[0] === 'f' || to[0] === 'g' || to[0] === 'h' || to[0] === 'a' || to[0] === 'b' || to[0] === 'c') && Math.abs(FILES.indexOf(to[0]!) - kf) <= 1 && from[0] === to[0]) {
+    out.push(tr('Moving a pawn in front of the castled king weakens its shelter.', 'Menggerakkan bidak di depan raja yang sudah rokade melemahkan perlindungannya.'));
+  }
+  if (!castled && piece.type === 'k' && ply <= 30 && Math.abs(from.charCodeAt(0) - to.charCodeAt(0)) <= 1) {
+    out.push(tr('The king moves without castling, so it loses castling rights and may be exposed.', 'Raja berjalan tanpa rokade, sehingga kehilangan hak rokade dan bisa terbuka.'));
+  }
+
+  // mobilitas
+  const mb = mobility(fenBefore, side); const ma = mobility(fenAfter, side);
+  if (mb !== null && ma !== null && !out.length) {
+    if (ma - mb >= 4) out.push(tr(`It frees the pieces: ${ma} possible moves instead of ${mb}.`, `Membebaskan buah-buah: ${ma} langkah mungkin, sebelumnya ${mb}.`));
+    else if (mb - ma >= 4) out.push(tr(`It restricts its own pieces: possible moves drop from ${mb} to ${ma}.`, `Membatasi buah sendiri: langkah mungkin turun dari ${mb} menjadi ${ma}.`));
+  }
+
+  // pinggir papan di opening
+  if (ply <= 12 && piece.type === 'p' && (to[0] === 'a' || to[0] === 'h') && !out.length) {
+    out.push(tr('An edge-pawn move this early does little for development or the centre.', 'Langkah bidak pinggir sedini ini kurang membantu pengembangan atau pusat.'));
+  }
+  return out.slice(0, 3);
+}
