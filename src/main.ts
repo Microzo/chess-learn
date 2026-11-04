@@ -11,6 +11,6 @@ go(homeScreen);
 // Service worker hanya di build produksi (di dev akan mengganggu hot reload).
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').then(() => watchUpdates()).catch((e) => console.warn('SW gagal:', e));
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(() => watchUpdates()).catch((e) => console.warn('SW gagal:', e));
   });
 }

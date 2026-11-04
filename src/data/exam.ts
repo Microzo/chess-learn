@@ -289,4 +289,58 @@ export const MC_QUESTIONS: McQuestion[] = [
     options: [['Stalemate and repetition', 'Pat dan pengulangan posisi'], ['Trading queens', 'Menukar ratu'], ['Castling', 'Rokade'], ['Promoting a pawn', 'Promosi bidak']], answer: 0,
     why: ['Both lead to a draw even when the opponent has more material.', 'Keduanya berakhir remis meski lawan punya material lebih banyak.'],
   },
+  {
+    id: 'b-bishop', level: 'beginner', topic: 'basics', lesson: 'nilai-bidak',
+    q: ["Which piece moves only along diagonals?", "Bidak mana yang hanya bergerak secara diagonal?"],
+    options: [["Rook", "Benteng"], ["Bishop", "Gajah"], ["Knight", "Kuda"], ["King", "Raja"]], answer: 1,
+    why: ["The bishop moves any distance diagonally, so it always stays on one colour of square.", "Gajah bergerak diagonal sejauh apa pun, sehingga selalu tetap di satu warna petak."],
+  },
+  {
+    id: 'b-promotion', level: 'beginner', topic: 'basics', lesson: 'nilai-bidak',
+    q: ["A pawn reaches the last rank. What can it become?", "Sebuah bidak mencapai baris terakhir. Menjadi apa ia boleh berubah?"],
+    options: [["Only a queen", "Hanya ratu"], ["A queen, rook, bishop or knight", "Ratu, benteng, gajah, atau kuda"], ["A king", "Raja"], ["It stays a pawn", "Tetap bidak"]], answer: 1,
+    why: ["Promotion is to a queen, rook, bishop or knight of the same colour. Queens are chosen most often, but a knight is sometimes best.", "Promosi menjadi ratu, benteng, gajah, atau kuda dengan warna yang sama. Ratu paling sering dipilih, tetapi kuda kadang paling tepat."],
+  },
+  {
+    id: 'b-check-escape', level: 'beginner', topic: 'basics', lesson: 'menang-seri',
+    q: ["Which of these is NOT a way to get out of check?", "Mana yang BUKAN cara keluar dari skak?"],
+    options: [["Move the king", "Menggeser raja"], ["Capture the checking piece", "Memakan bidak yang memberi skak"], ["Block the line of the check", "Menghalangi jalur skak"], ["Move any other piece and ignore it", "Menggerakkan bidak lain dan mengabaikannya"]], answer: 3,
+    why: ["The check must be answered at once: move the king, capture the attacker or block (a knight check cannot be blocked).", "Skak harus langsung dijawab: geser raja, makan penyerang, atau halangi (skak kuda tidak bisa dihalangi)."],
+  },
+  {
+    id: 'i-french', level: 'intermediate', topic: 'openings', lesson: 'french',
+    q: ["Which moves start the French Defence?", "Langkah mana yang memulai Pertahanan Prancis?"],
+    options: [["1.e4 e6", "1.e4 e6"], ["1.e4 c6", "1.e4 c6"], ["1.d4 d5", "1.d4 d5"], ["1.e4 d6", "1.e4 d6"]], answer: 0,
+    why: ["The French is 1.e4 e6, preparing ...d5. (1.e4 c6 is the Caro-Kann.)", "Prancis adalah 1.e4 e6, menyiapkan ...d5. (1.e4 c6 adalah Caro-Kann.)"],
+  },
+  {
+    id: 'i-scotch', level: 'intermediate', topic: 'openings', lesson: 'scotch',
+    q: ["What is the key move of the Scotch Game?", "Apa langkah kunci Scotch Game?"],
+    options: [["3.Bc4", "3.Bc4"], ["3.Bb5", "3.Bb5"], ["3.d4", "3.d4"], ["3.Nc3", "3.Nc3"]], answer: 2,
+    why: ["After 1.e4 e5 2.Nf3 Nc6 the Scotch plays 3.d4, opening the centre at once.", "Setelah 1.e4 e5 2.Nf3 Nc6, Scotch memainkan 3.d4 dan langsung membuka pusat."],
+  },
+  {
+    id: 'i-luft', level: 'intermediate', topic: 'tactics', lesson: 'mat-lorong',
+    q: ["How can you protect yourself against a back-rank mate?", "Bagaimana melindungi diri dari mat lorong?"],
+    options: [["Trade all the pawns", "Menukar semua bidak"], ["Give the king a flight square (luft) with a pawn move", "Memberi raja petak lari (luft) dengan langkah bidak"], ["Move the rooks off the back rank", "Memindahkan benteng dari barisan belakang"], ["Castle again", "Rokade lagi"]], answer: 1,
+    why: ["A pawn move such as h3 gives the king a flight square so a rook or queen check is no longer mate.", "Langkah bidak seperti h3 memberi raja petak lari sehingga skak benteng atau ratu bukan lagi mat."],
+  },
+  {
+    id: 'a-nimzo', level: 'advanced', topic: 'openings', lesson: 'nimzo-indian',
+    q: ["Which move defines the Nimzo-Indian Defence?", "Langkah mana yang mencirikan Pertahanan Nimzo-India?"],
+    options: [["3...Bb4", "3...Bb4"], ["3...d5", "3...d5"], ["3...Bb7", "3...Bb7"], ["3...c5", "3...c5"]], answer: 0,
+    why: ["After 1.d4 Nf6 2.c4 e6 3.Nc3, Black pins the knight with 3...Bb4 and fights for e4.", "Setelah 1.d4 Nf6 2.c4 e6 3.Nc3, Hitam mengunci kuda dengan 3...Bb4 dan memperebutkan e4."],
+  },
+  {
+    id: 'a-slav', level: 'advanced', topic: 'openings', lesson: 'slav',
+    q: ["What is the main idea of 2...c6 in the Slav Defence?", "Apa gagasan utama 2...c6 dalam Pertahanan Slav?"],
+    options: [["To attack the c4 pawn at once", "Menyerang bidak c4 seketika"], ["To support the d5 pawn without blocking the bishop on c8", "Mendukung bidak d5 tanpa menutup gajah c8"], ["To prepare castling queenside", "Menyiapkan rokade panjang"], ["To trade queens", "Menukar ratu"]], answer: 1,
+    why: ["After 1.d4 d5 2.c4 c6, the c-pawn guards d5 and the light-squared bishop can still develop outside the pawn chain.", "Setelah 1.d4 d5 2.c4 c6, bidak c menjaga d5 dan gajah petak terang masih bisa berkembang di luar rantai bidak."],
+  },
+  {
+    id: 'a-ladder', level: 'advanced', topic: 'tactics', lesson: 'mat-tangga',
+    q: ["Which pieces deliver the ladder (staircase) mate?", "Buah apa yang memberikan mat tangga?"],
+    options: [["Two rooks (or a rook and queen)", "Dua benteng (atau benteng dan ratu)"], ["Two knights", "Dua kuda"], ["Bishop and knight", "Gajah dan kuda"], ["A lone queen", "Ratu sendirian"]], answer: 0,
+    why: ["Two heavy pieces take turns checking on adjacent ranks or files, pushing the king to the edge.", "Dua buah berat bergantian memberi skak di baris atau kolom bersebelahan sehingga raja terdorong ke tepi."],
+  },
 ];

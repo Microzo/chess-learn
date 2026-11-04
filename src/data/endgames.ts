@@ -70,4 +70,10 @@ export const ENDGAMES: EndgameDrill[] = [
     task: ['Checkmate with king and two bishops. It takes up to about 19 moves.', 'Skakmat dengan raja dan dua gajah. Butuh hingga sekitar 19 langkah.'],
     hint: ['Drive the king to a corner with the bishops side by side, then bring your king up.', 'Dorong raja ke sudut dengan gajah berdampingan, lalu dekatkan rajamu.'],
   },
+  {
+    id: 'wrong-corner', fen: '8/1k6/8/8/8/8/P7/2B1K3 b - - 0 1', player: 'b', goal: 'draw', level: 'advanced', lesson: 'menang-seri',
+    title: ['The wrong-coloured bishop', 'Gajah beda warna'],
+    task: ['You are Black. White has a bishop and a rook pawn, but the bishop does not match the corner. Hold the draw.', 'Kamu Hitam. Putih punya gajah dan bidak pinggir, tetapi warna gajahnya tidak cocok dengan sudut promosi. Pertahankan remis.'],
+    hint: ['Keep your king on a7, b7 or a8: the bishop can never control the promotion corner.', 'Jaga rajamu di a7, b7, atau a8: gajah tidak akan pernah menguasai sudut promosi.'],
+  },
 ];
