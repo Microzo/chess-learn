@@ -88,10 +88,16 @@ small { color: var(--muted); }
 .promo-btn:hover { background: #fff; }
 
 /* bar evaluasi */
-.eval-bar { position: relative; height: 24px; background: #1d1c1a; border: 1px solid #6b6964; border-radius: 4px; overflow: hidden; width: var(--bs); max-width: 100%; margin: 0 auto; }
-.eval-fill { height: 100%; background: #f2f2f2; transition: width .35s ease; }
-.eval-label { position: absolute; top: 50%; transform: translateY(-50%); font-size: .75rem; font-weight: 700; right: 6px; color: #fff; }
-.eval-bar[data-lead='w'] .eval-label { right: auto; left: 6px; color: #1d1c1a; }
+/* bar dominasi vertikal di samping papan */
+.board-with-bar { --bar-w: 30px; --bar-gap: 6px; display: flex; gap: var(--bar-gap); align-items: stretch; width: var(--bs); max-width: 100%; margin: 0 auto; }
+.board-with-bar .board-wrap { width: calc(100% - var(--bar-w) - var(--bar-gap)); margin: 0; flex: none; }
+.eval-bar { position: relative; flex: none; width: var(--bar-w); background: #1d1c1a; border: 1px solid #6b6964; border-radius: 4px; overflow: hidden; }
+.eval-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: #f2f2f2; transition: height .35s ease; }
+.eval-bar[data-flip='1'] .eval-fill { top: 0; bottom: auto; }
+.eval-label { position: absolute; left: 0; right: 0; text-align: center; top: 4px; font-size: .62rem; font-weight: 700; color: #fff; }
+.eval-bar[data-lead='w'] .eval-label { top: auto; bottom: 4px; color: #1d1c1a; }
+.eval-bar[data-flip='1'] .eval-label { top: auto; bottom: 4px; color: #fff; }
+.eval-bar[data-flip='1'][data-lead='w'] .eval-label { bottom: auto; top: 4px; color: #1d1c1a; }
 
 .status { text-align: center; font-weight: 600; min-height: 1.4em; }
 .opening { text-align: center; color: var(--c-book); font-weight: 600; min-height: 1.2em; }
@@ -174,6 +180,7 @@ summary { cursor: pointer; }
 /* opsi tampilan */
 :root[data-coords='off'] .coord { display: none; }
 :root[data-evalbar='off'] .eval-bar { display: none; }
+:root[data-evalbar='off'] .board-with-bar { --bar-w: 0px; --bar-gap: 0px; }
 
 /* belajar strategi */
 .lesson-cat { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }

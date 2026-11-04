@@ -20,7 +20,7 @@ afterEach(() => {
 
 describe('PvP tanpa jam', () => {
   it('dua pemain bergantian, batal langkah tersedia', () => {
-    const root = show(() => pvpGame('A', 'B', false));
+    const root = show(() => pvpGame('A', 'B'));
     expect(root.querySelectorAll('.clock')).toHaveLength(0);
     move(root, 'e2', 'e4');
     move(root, 'e7', 'e5');
@@ -31,7 +31,7 @@ describe('PvP tanpa jam', () => {
   });
 
   it('menyimpan partai ke penyimpanan setelah langkah pertama', () => {
-    const root = show(() => pvpGame('A', 'B', false));
+    const root = show(() => pvpGame('A', 'B'));
     expect(listGames()).toHaveLength(0);
     move(root, 'e2', 'e4');
     expect(listGames()).toHaveLength(1);
@@ -39,14 +39,14 @@ describe('PvP tanpa jam', () => {
   });
 
   it('skakmat mengakhiri partai dan menampilkan pemenang', () => {
-    const root = show(() => pvpGame('A', 'B', false));
+    const root = show(() => pvpGame('A', 'B'));
     for (const [f, t] of [['f2', 'f3'], ['e7', 'e5'], ['g2', 'g4'], ['d8', 'h4']] as const) move(root, f, t);
     expect(root.querySelector('.end')!.textContent).toContain('B menang');
     expect(listGames()[0]!.result).toBe('0-1');
   });
 
   it('menyerah memerlukan konfirmasi', () => {
-    const root = show(() => pvpGame('A', 'B', false));
+    const root = show(() => pvpGame('A', 'B'));
     move(root, 'e2', 'e4');
     const confirmSpy = spyDialog('confirm').mockReturnValue(false);
     button(root, 'Menyerah').click();
@@ -68,7 +68,7 @@ describe('PvP dengan jam', () => {
   });
 
   it('jam mulai setelah langkah pertama dan berpindah tiap giliran', () => {
-    const root = show(() => pvpGame('A', 'B', false, tc3));
+    const root = show(() => pvpGame('A', 'B', tc3));
     expect(clocks(root)).toEqual(['3:00', '3:00']);
     move(root, 'e2', 'e4');
     vi.advanceTimersByTime(5000);
@@ -79,12 +79,12 @@ describe('PvP dengan jam', () => {
   });
 
   it('batal langkah tidak tersedia saat memakai jam', () => {
-    const root = show(() => pvpGame('A', 'B', false, tc3));
+    const root = show(() => pvpGame('A', 'B', tc3));
     expect([...root.querySelectorAll('button')].some((b) => b.textContent?.includes('Batal'))).toBe(false);
   });
 
   it('waktu habis mengakhiri partai untuk pihak yang benar', () => {
-    const root = show(() => pvpGame('A', 'B', false, tc3));
+    const root = show(() => pvpGame('A', 'B', tc3));
     move(root, 'e2', 'e4');
     move(root, 'e7', 'e5');
     vi.advanceTimersByTime(181_000); // jam Putih habis
@@ -94,7 +94,7 @@ describe('PvP dengan jam', () => {
   });
 
   it('langkah setelah bendera jatuh ditolak walau interval belum berdetak', () => {
-    const root = show(() => pvpGame('A', 'B', false, tc3));
+    const root = show(() => pvpGame('A', 'B', tc3));
     move(root, 'e2', 'e4');
     move(root, 'e7', 'e5');
     vi.setSystemTime(Date.now() + 200_000); // lompat waktu tanpa menjalankan timer
@@ -104,7 +104,7 @@ describe('PvP dengan jam', () => {
   });
 
   it('jam dijeda saat dialog menyerah terbuka', () => {
-    const root = show(() => pvpGame('A', 'B', false, tc3));
+    const root = show(() => pvpGame('A', 'B', tc3));
     move(root, 'e2', 'e4');
     spyDialog('confirm').mockImplementation(() => {
       vi.setSystemTime(Date.now() + 20_000); // dialog terbuka 20 detik
@@ -117,7 +117,7 @@ describe('PvP dengan jam', () => {
   });
 
   it('menyerah menghentikan jam', () => {
-    const root = show(() => pvpGame('A', 'B', false, tc3));
+    const root = show(() => pvpGame('A', 'B', tc3));
     move(root, 'e2', 'e4');
     spyDialog('confirm').mockReturnValue(true);
     button(root, 'Menyerah').click();
@@ -127,7 +127,7 @@ describe('PvP dengan jam', () => {
   });
 
   it('meninggalkan layar menghentikan interval jam', () => {
-    show(() => pvpGame('A', 'B', false, tc3));
+    show(() => pvpGame('A', 'B', tc3));
     expect(vi.getTimerCount()).toBeGreaterThan(0);
     show(pvpSetup);
     expect(vi.getTimerCount()).toBe(0);

@@ -12,3 +12,8 @@ export function gameLayout(header: Node, main: Kid[], side: Kid[]): HTMLElement 
     h('div', { class: 'game-main' }, ...main),
     h('div', { class: 'game-side' }, ...side));
 }
+
+/** Papan dengan bar dominasi vertikal di sisi kirinya (tinggi bar mengikuti papan). */
+export function boardWithBar(bar: Node, board: Node): HTMLElement {
+  return h('div', { class: 'board-with-bar' }, bar, board);
+}

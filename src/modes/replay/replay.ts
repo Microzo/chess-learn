@@ -7,7 +7,7 @@ import { deleteGame, exportBackup, getGame, importBackup, listGames, newId, save
 import type { Evaluation, MoveAnalysis, MoveClass, SavedGame } from '../../types';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
-import { gameLayout } from '../../ui/layout';
+import { boardWithBar, gameLayout } from '../../ui/layout';
 import { copyText, downloadText, localDate, safeFilename } from '../../ui/download';
 import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
@@ -141,6 +141,7 @@ export function replayScreen(id: string): Screen {
     });
 
     evalBar.set(cur ? cur.evalAfter : { cp: 0, mate: null });
+    evalBar.setFlip(flip);
     moves.render(sans, a, idx);
 
     if (idx === 0) cardBox.replaceChildren(h('div', { class: 'card muted' }, 'Posisi awal.'));
@@ -215,7 +216,7 @@ export function replayScreen(id: string): Screen {
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', onclick: () => go(replayList) }, '←'),
       h('h2', {}, `${game.white} vs ${game.black}`)),
-    [opening, evalBar.el, board.el],
+    [opening, boardWithBar(evalBar.el, board.el)],
     [h('div', { class: 'row nav' },
       h('button', { class: 'btn', onclick: () => step(-999) }, '⏮'),
       h('button', { class: 'btn', onclick: () => step(-1) }, '◀'),

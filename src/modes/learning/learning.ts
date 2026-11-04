@@ -8,7 +8,7 @@ import { newId, saveGame } from '../../core/storage/games';
 import type { MoveAnalysis } from '../../types';
 import { Board } from '../../ui/board/board';
 import { h } from '../../ui/dom';
-import { gameLayout } from '../../ui/layout';
+import { boardWithBar, gameLayout } from '../../ui/layout';
 import { analysisCard, badge, EvalBar, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 import { replayScreen } from '../replay/replay';
@@ -16,6 +16,7 @@ import { replayScreen } from '../replay/replay';
 export function learningSetup(): Screen {
   let color: 'w' | 'b' | 'r' = 'w';
   let level = 3;
+  let guided = true;
 
   const colorBtns = (['w', 'r', 'b'] as const).map((c) =>
     h('button', { class: 'chip', 'data-v': c, onclick: () => { color = c; sync(); } },
@@ -25,7 +26,14 @@ export function learningSetup(): Screen {
     h('button', { class: 'chip', 'data-v': l.id, onclick: () => { level = l.id; sync(); } },
       h('b', {}, `${l.id}`), ` ${l.name} `, h('small', {}, l.hint)),
   );
+  const guideBtns = ([[true, '🧭 Dengan panduan'], [false, '🎯 Tanpa panduan']] as const).map(([v, label]) =>
+    h('button', { class: 'chip', 'data-v': v ? 'guide' : 'free', onclick: () => { guided = v; sync(); } }, label));
+  const guideNote = h('p', { class: 'muted guide-note' });
   const sync = () => {
+    guideBtns.forEach((b) => b.classList.toggle('on', (b.dataset.v === 'guide') === guided));
+    guideNote.textContent = guided
+      ? 'Setiap langkahmu langsung dianalisa (opening, terbaik, kesalahan, blunder), ada bar dominasi dan tombol Saran.'
+      : 'Main murni melawan bot: tanpa analisa, tanpa bar, tanpa saran. Partai tetap tersimpan, analisa nanti lewat Replay.';
     colorBtns.forEach((b) => b.classList.toggle('on', b.dataset.v === color));
     levelBtns.forEach((b) => b.classList.toggle('on', b.dataset.v === String(level)));
   };
@@ -33,21 +41,25 @@ export function learningSetup(): Screen {
 
   const el = h('div', { class: 'screen' },
     h('header', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'), h('h2', {}, 'Belajar vs Bot')),
-    h('p', { class: 'muted' }, 'Setiap langkahmu langsung dianalisa: opening, terbaik, bagus, kesalahan, blunder.'),
+    h('h3', {}, 'Mode'), h('div', { class: 'chips' }, ...guideBtns), guideNote,
     h('h3', {}, 'Warna'), h('div', { class: 'chips' }, ...colorBtns),
     h('h3', {}, 'Level bot'), h('div', { class: 'chips' }, ...levelBtns),
     h('button', {
       class: 'btn primary big',
       onclick: () => {
         const p = color === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : color;
-        go(() => learningGame(p, BOT_LEVELS.find((l) => l.id === level)!));
+        go(() => learningGame(p, BOT_LEVELS.find((l) => l.id === level)!, guided));
       },
     }, 'Mulai'),
   );
   return { el };
 }
 
-export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
+/**
+ * guided=true: analisa tiap langkah, bar dominasi, saran. guided=false: main murni lawan bot, tanpa
+ * analisa sama sekali (hemat CPU juga); partai disimpan tanpa analisa dan bisa dianalisa lewat Replay.
+ */
+export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true): Screen {
   const chess = new Chess();
   const analyzer = getAnalyzer();
   const engine = getEngine();
@@ -64,6 +76,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
 
   const board = new Board((f, t, p) => void playerMove(f, t, p));
   const evalBar = new EvalBar();
+  evalBar.setFlip(player === 'b');
   const status = h('div', { class: 'status' }, 'Memuat engine…');
   const cardBox = h('div', { class: 'cardbox' }, analysisCard(null));
   const botLine = h('div', { class: 'botline muted' });
@@ -94,8 +107,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
       black: player === 'b' ? 'Kamu' : botName,
       pgn: toPgn(chess, player === 'w' ? 'Kamu' : botName, player === 'b' ? 'Kamu' : botName, result),
       result,
-      analysis: analyses.slice(),
-      accuracy: accuracyOf(analyses),
+      ...(guided ? { analysis: analyses.slice(), accuracy: accuracyOf(analyses) } : {}),
     });
   }
 
@@ -108,7 +120,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
     endBox.replaceChildren(
       h('div', { class: 'card end' },
         h('strong', {}, resigned ? 'Kamu menyerah.' : statusOf(chess).text),
-        h('p', {}, `Akurasimu: ${mine.toFixed(0)}%`),
+        guided ? h('p', {}, `Akurasimu: ${mine.toFixed(0)}%`) : h('p', { class: 'muted' }, 'Mode tanpa panduan: tekan Replay & analisa untuk melihat kualitas langkahmu.'),
         h('div', { class: 'row' },
           h('button', { class: 'btn primary', onclick: () => go(() => replayScreen(id)) }, 'Replay & analisa'),
           h('button', { class: 'btn', onclick: () => go(learningSetup) }, 'Main lagi'),
@@ -124,9 +136,15 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
     const fenBefore = chess.fen();
     const m = chess.move({ from, to, ...(promo ? { promotion: promo } : {}) });
     last = [from, to];
-    status.textContent = 'Menganalisa…';
-    cardBox.replaceChildren(analysisCard(null, { pending: true }));
+    if (guided) {
+      status.textContent = 'Menganalisa…';
+      cardBox.replaceChildren(analysisCard(null, { pending: true }));
+    }
     draw();
+    if (!guided) {
+      if (isOver()) return finish();
+      return botTurn();
+    }
     try {
       const a = await analyzer.analyseMove(fenBefore, m.after, m.san, uciOf(m), chess.history().length);
       if (destroyed) return;
@@ -152,6 +170,14 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
       const m = chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), ...(uci[4] ? { promotion: uci[4] } : {}) });
       last = [m.from, m.to];
       draw();
+      if (!guided) {
+        persist();
+        if (isOver()) return finish();
+        busy = false;
+        status.textContent = '';
+        draw();
+        return;
+      }
       // langkah bot: lewati pencarian MultiPV untuk 'Hebat' agar balasan tidak tertunda
       const a = await analyzer.analyseMove(fenBefore, m.after, m.san, uciOf(m), chess.history().length, false);
       if (destroyed) return;
@@ -217,8 +243,10 @@ export function learningGame(player: 'w' | 'b', level: BotLevel): Screen {
     h('header', { class: 'bar' },
       h('button', { class: 'btn ghost', onclick: () => go(homeScreen) }, '←'),
       h('h2', {}, `Belajar · ${botName}`)),
-    [evalBar.el, board.el, status],
-    [cardBox, botLine, h('div', { class: 'row' }, hintBtn, undoBtn, resignBtn), endBox, moves.el],
+    [guided ? boardWithBar(evalBar.el, board.el) : board.el, status],
+    guided
+      ? [cardBox, botLine, h('div', { class: 'row' }, hintBtn, undoBtn, resignBtn), endBox, moves.el]
+      : [h('div', { class: 'row' }, undoBtn, resignBtn), endBox, moves.el],
   );
 
   (async () => {

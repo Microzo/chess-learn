@@ -13,7 +13,6 @@ import { replayScreen } from '../replay/replay';
 export function pvpSetup(): Screen {
   const p1 = h('input', { value: 'Pemain 1', maxlength: '20' }) as HTMLInputElement;
   const p2 = h('input', { value: 'Pemain 2', maxlength: '20' }) as HTMLInputElement;
-  const auto = h('input', { type: 'checkbox', checked: true }) as HTMLInputElement;
   let tc: TimeControl | null = null;
   const chips: HTMLElement[] = [];
   const paintChips = () => chips.forEach((c, i) => c.classList.toggle('on', (i === 0 ? tc === null : tc === TIME_CONTROLS[i - 1])));
@@ -31,16 +30,16 @@ export function pvpSetup(): Screen {
     h('label', { class: 'field' }, 'Putih', p1),
     h('label', { class: 'field' }, 'Hitam', p2),
     h('div', { class: 'field' }, 'Jam catur', chipRow),
-    h('label', { class: 'check' }, auto, ' Putar papan otomatis tiap giliran'),
     h('button', {
       class: 'btn primary big',
-      onclick: () => go(() => pvpGame(p1.value.trim() || 'Putih', p2.value.trim() || 'Hitam', auto.checked, tc)),
+      onclick: () => go(() => pvpGame(p1.value.trim() || 'Putih', p2.value.trim() || 'Hitam', tc)),
     }, 'Mulai'),
   );
   return { el };
 }
 
-export function pvpGame(white: string, black: string, autoFlip: boolean, tc: TimeControl | null = null): Screen {
+/** Papan tidak berputar sendiri (dimainkan dua orang di satu perangkat); ada tombol Putar manual. */
+export function pvpGame(white: string, black: string, tc: TimeControl | null = null): Screen {
   const chess = new Chess();
   const id = newId();
   const createdAt = Date.now();
@@ -79,7 +78,7 @@ export function pvpGame(white: string, black: string, autoFlip: boolean, tc: Tim
 
   function draw() {
     const over = isOver();
-    const flip = autoFlip ? chess.turn() === 'b' : manualFlip;
+    const flip = manualFlip;
     board.set(chess, { last, flip, movable: over ? null : 'both' });
     const bottom: Side = flip ? 'b' : 'w';
     const top: Side = bottom === 'w' ? 'b' : 'w';
@@ -170,7 +169,7 @@ export function pvpGame(white: string, black: string, autoFlip: boolean, tc: Tim
       clock ? null : h('button', { class: 'btn', onclick: undo }, '↶ Batal langkah'),
       h('button', { class: 'btn', onclick: draw_ }, '½ Remis'),
       h('button', { class: 'btn danger', onclick: resign }, '🏳 Menyerah'),
-      autoFlip ? null : h('button', { class: 'btn', onclick: () => { manualFlip = !manualFlip; draw(); } }, '⟲ Putar')),
+      h('button', { class: 'btn', onclick: () => { manualFlip = !manualFlip; draw(); } }, '⟲ Putar')),
     endBox, moves.el],
   );
   draw();

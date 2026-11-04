@@ -14,7 +14,7 @@ export function badge(cls: MoveClass, withText = true): HTMLElement {
   return h('span', { class: `badge ${cls}` }, CLASS_SYMBOL[cls], withText ? ` ${CLASS_LABEL[cls]}` : '');
 }
 
-/** Bar evaluasi horizontal: bagian putih = peluang menang putih. */
+/** Bar dominasi vertikal di samping papan: bagian putih = peluang menang Putih. */
 export class EvalBar {
   readonly el: HTMLElement;
   private fill = h('div', { class: 'eval-fill' });
@@ -27,7 +27,7 @@ export class EvalBar {
 
   set(e: Evaluation) {
     const pct = winPercent(e);
-    this.fill.style.width = `${pct}%`;
+    this.fill.style.height = `${pct}%`;
     this.label.textContent = formatEval(e);
     // angka diletakkan di sisi pemain yang unggul agar selalu terbaca
     const lead = pct > 52 ? 'w' : pct < 48 ? 'b' : 'even';
@@ -36,6 +36,11 @@ export class EvalBar {
     this.el.title = `${who} (${formatEval(e)})`;
     this.el.setAttribute('role', 'img');
     this.el.setAttribute('aria-label', `Bar dominasi: ${who}, ${formatEval(e)}, peluang menang Putih ${pct.toFixed(0)} persen`);
+  }
+
+  /** Papan dibalik (Hitam di bawah): bar ikut dibalik agar sisi Hitam tetap searah papan. */
+  setFlip(flip: boolean) {
+    this.el.dataset['flip'] = flip ? '1' : '0';
   }
 }
 
@@ -64,10 +69,15 @@ export class MoveList {
       }
       this.el.append(row);
     }
-    // gulir ke langkah terbaru / terpilih
-    const cur = this.el.querySelector('.cur');
-    if (cur) (cur as HTMLElement).scrollIntoView({ block: 'nearest' });
-    else this.el.scrollTop = this.el.scrollHeight;
+    // Gulir hanya daftar ini. scrollIntoView ikut menggulir seluruh halaman sehingga papan dan bar
+    // terdorong keluar layar setiap ada langkah.
+    const box = this.el;
+    const cur = box.querySelector<HTMLElement>('.cur');
+    if (!cur) { box.scrollTop = box.scrollHeight; return; }
+    const top = cur.offsetTop - box.offsetTop;
+    const bottom = top + cur.offsetHeight;
+    if (top < box.scrollTop) box.scrollTop = top;
+    else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight;
   }
 }
 
