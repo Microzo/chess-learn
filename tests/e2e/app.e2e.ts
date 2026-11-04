@@ -2,11 +2,11 @@ import { expect, test } from './fixtures';
 import { clickMove, dragMove, LEGAL_PGN, menu, noHorizontalScroll, pieces, square, watchErrors } from './util';
 
 test.describe('layar utama dan navigasi', () => {
-  test('menampilkan lima mode, tautan lisensi, dan tidak ada galat', async ({ page }) => {
+  test('menampilkan tujuh mode, tautan lisensi, dan tidak ada galat', async ({ page }) => {
     const w = watchErrors(page);
     await page.goto('./');
     await expect(page.locator('h1')).toContainText('Chess Learn');
-    await expect(page.locator('.menu-item')).toHaveCount(5);
+    await expect(page.locator('.menu-item')).toHaveCount(7);
     const lic = page.getByRole('link', { name: 'Lisensi dan atribusi' });
     await expect(lic).toBeVisible();
     const res = await page.request.get((await lic.getAttribute('href'))!);

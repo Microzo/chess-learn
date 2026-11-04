@@ -10,6 +10,8 @@ const EXPECTED: Record<string, { plies: number; end: 'mate' | 'resign'; lastSan:
   'kasparov-topalov': { plies: 87, end: 'resign', lastSan: 'Qa7' },
   'deep-blue': { plies: 37, end: 'resign', lastSan: 'c4' },
   'fischer-spassky-6': { plies: 81, end: 'resign', lastSan: 'Qf4' },
+  evergreen: { plies: 47, end: 'mate', lastSan: 'Bxe7#' },
+  'immortal-zugzwang': { plies: 50, end: 'resign', lastSan: 'h6' },
 };
 
 describe('data partai legendaris', () => {

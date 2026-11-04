@@ -1,4 +1,6 @@
 import { go, type Screen } from '../../app/router';
+import { endgameList } from '../../modes/endgames/endgames';
+import { examHome } from '../../modes/exam/exam';
 import { classicsList } from '../../modes/classics/classics';
 import { learningSetup } from '../../modes/learning/learning';
 import { lessonList } from '../../modes/lessons/lessons';
@@ -23,6 +25,8 @@ export function homeScreen(): Screen {
     menu('🎓', tr('Learn vs Bot', 'Belajar vs Bot'), tr('Live analysis of every move', 'Analisa langsung tiap langkah'), () => go(learningSetup)),
     menu('👥', tr('Two Players', 'Main berdua'), tr('Two players, one device', 'Dua pemain, satu perangkat'), () => go(pvpSetup)),
     menu('🏆', tr('Legendary Games', 'Partai Legendaris'), tr('Study the moves and notation of world-class games', 'Pelajari langkah dan notasi dari partai kelas dunia'), () => go(classicsList)),
+    menu('♟', tr('Endgame Practice', 'Latihan Endgame'), tr('Win and hold classic endgames against the bot', 'Menangkan dan pertahankan endgame klasik melawan bot'), () => go(endgameList)),
+    menu('📝', tr('Exam & Progress', 'Ujian & Progres'), tr('Level exams and your progress over time', 'Ujian per level dan perkembanganmu'), () => go(examHome)),
     menu('📼', tr('Replay & Analysis', 'Replay & Analisa'), tr('Replay, graph, accuracy, openings', 'Putar ulang, grafik, akurasi, opening'), () => go(replayList)),
     settings,
     h('p', { class: 'muted legal' },

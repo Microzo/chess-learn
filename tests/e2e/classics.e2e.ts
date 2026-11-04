@@ -8,7 +8,7 @@ test.describe('partai legendaris', () => {
     const w = watchErrors(page);
     await page.goto('./');
     await menu(page, /Partai Legendaris/).click();
-    await expect(page.locator('.item')).toHaveCount(6);
+    await expect(page.locator('.item')).toHaveCount(8);
     await page.locator('.item[data-id="opera"] .item-main').click();
     await expect(page.locator('h2')).toContainText('Paul Morphy');
 

@@ -252,3 +252,24 @@ code { background: var(--panel2); padding: 1px 6px; border-radius: 4px; font-fam
 .eval-bar.idle { opacity: .35; }
 .eval-bar.idle .eval-label { display: none; }
 .classic-intro summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+
+/* ujian dan progres */
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { text-align: left; background: var(--panel); color: var(--text); border: 1px solid #4a4845; border-radius: 10px; padding: 12px 14px; min-height: 48px; cursor: pointer; }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--c-best); background: #3b4a2c; }
+.opt.wrong { border-color: var(--c-blunder); background: #4a2a28; }
+:root[data-theme='terang'] .opt { border-color: #cfcbc3; }
+:root[data-theme='terang'] .opt.right { background: #dcebc8; }
+:root[data-theme='terang'] .opt.wrong { background: #f6d5d2; }
+.exam-q, .exam-home, .exam-result { display: flex; flex-direction: column; gap: 12px; }
+.exam-prompt { line-height: 1.4; }
+.exam-level .btn { align-self: flex-start; }
+.level-now-name { font-size: 1.3rem; }
+.score { font-size: 1.6rem; }
+.meters { display: flex; flex-direction: column; gap: 8px; }
+.meter-row { display: grid; grid-template-columns: minmax(90px, 40%) 1fr auto; align-items: center; gap: 8px; font-size: .9rem; }
+.meter-val { font-variant-numeric: tabular-nums; color: var(--muted); }
+.bar-track { height: 10px; background: var(--panel2); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--c-mistake); border-radius: 5px; transition: width .3s; }
+.bar-fill.ok { background: var(--c-best); }

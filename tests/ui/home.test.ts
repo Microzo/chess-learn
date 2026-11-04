@@ -8,9 +8,9 @@ import { button, show } from './helpers';
 beforeEach(() => { localStorage.clear(); });
 
 describe('layar utama', () => {
-  it('menampilkan lima mode dan tautan lisensi serta kode sumber', () => {
+  it('menampilkan tujuh mode dan tautan lisensi serta kode sumber', () => {
     const root = show(homeScreen);
-    expect(root.querySelectorAll('.menu-item')).toHaveLength(5);
+    expect(root.querySelectorAll('.menu-item')).toHaveLength(7);
     const links = [...root.querySelectorAll('a')].map((a) => a.getAttribute('href'));
     expect(links.some((h) => h?.endsWith('licenses/README.txt'))).toBe(true);
     expect(links).toContain('https://github.com/Microzo/chess-learn');
