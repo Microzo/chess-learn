@@ -24,8 +24,8 @@ const VALUE: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 };
 
 const fmtEval = (e: Evaluation) => {
   if (e.mate !== null) return `${e.mate > 0 ? '+' : '-'}M${Math.abs(e.mate)}`;
-  const cp = e.cp ?? 0;
-  return `${cp >= 0 ? '+' : ''}${(cp / 100).toFixed(1)}`;
+  const v = Math.round((e.cp ?? 0) / 10) / 10; // satu desimal; hindari "-0.0"
+  return `${v > 0 ? '+' : ''}${v === 0 ? '0.0' : v.toFixed(1)}`;
 };
 
 /** Garis UCI menjadi teks SAN bernomor, mis. "12.Nf3 Nc6 13.Bb5". Berhenti bila ada langkah ilegal. */
