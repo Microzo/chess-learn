@@ -1,4 +1,5 @@
 import { go, type Screen } from '../../app/router';
+import { classicsList } from '../../modes/classics/classics';
 import { learningSetup } from '../../modes/learning/learning';
 import { lessonList } from '../../modes/lessons/lessons';
 import { pvpSetup } from '../../modes/pvp/pvp';
@@ -20,6 +21,7 @@ export function homeScreen(): Screen {
     menu('📚', 'Belajar Strategi', 'Opening, taktik, endgame, dan istilah catur', () => go(lessonList)),
     menu('🎓', 'Belajar vs Bot', 'Analisa langsung tiap langkah', () => go(learningSetup)),
     menu('👥', 'Main berdua', 'Dua pemain, satu perangkat', () => go(pvpSetup)),
+    menu('🏆', 'Partai Legendaris', 'Pelajari langkah dan notasi dari partai kelas dunia', () => go(classicsList)),
     menu('📼', 'Replay & Analisa', 'Putar ulang, grafik, akurasi, opening', () => go(replayList)),
     settings,
     h('p', { class: 'muted legal' },

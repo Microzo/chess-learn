@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { clickMove, dragMove, LEGAL_PGN, menu, noHorizontalScroll, pieces, square, watchErrors } from './util';
 
 test.describe('layar utama dan navigasi', () => {
-  test('menampilkan empat mode, tautan lisensi, dan tidak ada galat', async ({ page }) => {
+  test('menampilkan lima mode, tautan lisensi, dan tidak ada galat', async ({ page }) => {
     const w = watchErrors(page);
     await page.goto('./');
     await expect(page.locator('h1')).toContainText('Chess Learn');
-    await expect(page.locator('.menu-item')).toHaveCount(4);
+    await expect(page.locator('.menu-item')).toHaveCount(5);
     const lic = page.getByRole('link', { name: 'Lisensi dan atribusi' });
     await expect(lic).toBeVisible();
     const res = await page.request.get((await lic.getAttribute('href'))!);
@@ -167,7 +167,7 @@ test.describe('lawan bot dan analisa dengan engine asli', () => {
     await page.locator('details summary', { hasText: 'Impor PGN' }).click();
     await page.locator('textarea').fill(LEGAL_PGN);
     await page.getByRole('button', { name: 'Impor', exact: true }).click();
-    await page.getByRole('button', { name: '←' }).first().click();
+    await page.getByRole('button', { name: 'Kembali', exact: true }).click();
     await expect(page.locator('.item')).toHaveCount(1);
 
     const [download] = await Promise.all([

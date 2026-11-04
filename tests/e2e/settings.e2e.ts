@@ -85,8 +85,9 @@ test.describe('bar dominasi', () => {
     // akhir partai: Putih mematikan Hitam
     await page.locator('.movelist button', { hasText: 'Nd5#' }).click();
     await expect(bar).toHaveAttribute('data-lead', 'w');
-    const full = await page.locator('.eval-fill').evaluate((el) => el.getBoundingClientRect().height / el.parentElement!.getBoundingClientRect().height);
-    expect(full).toBeGreaterThan(0.9);
+    // bar beranimasi 0,35 detik: tunggu sampai bagian putih hampir memenuhi bar
+    const ratio = () => page.locator('.eval-fill').evaluate((el) => el.getBoundingClientRect().height / el.parentElement!.getBoundingClientRect().height);
+    await expect.poll(ratio).toBeGreaterThan(0.9);
     // posisi awal: seimbang
     await page.getByRole('button', { name: '⏮' }).click();
     await expect(bar).toHaveAttribute('data-lead', 'even');

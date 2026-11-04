@@ -235,3 +235,20 @@ summary { cursor: pointer; }
   .menu-item { padding: 18px; }
   .home h1 { font-size: 2.4rem; }
 }
+
+/* partai legendaris */
+.level { margin-right: 12px; padding: 3px 10px; border-radius: 12px; font-size: .72rem; font-weight: 700; white-space: nowrap; background: var(--panel2); color: var(--muted); }
+.level-pemula { background: #3b4a2c; color: #cfe8b0; }
+.level-menengah { background: #4a3f22; color: #f2dc9a; }
+.level-lanjut { background: #4a2a28; color: #ffb3ad; }
+:root[data-theme='terang'] .level-pemula { background: #dcebc8; color: #2f5a0f; }
+:root[data-theme='terang'] .level-menengah { background: #f4e7bd; color: #6a5200; }
+:root[data-theme='terang'] .level-lanjut { background: #f6d5d2; color: #8a1f17; }
+code { background: var(--panel2); padding: 1px 6px; border-radius: 4px; font-family: ui-monospace, Consolas, monospace; }
+.card.note { border-left-color: var(--c-great); }
+.card.note p { margin-top: 4px; line-height: 1.5; }
+.classic-intro { display: flex; flex-direction: column; gap: 6px; }
+.classic-intro p { line-height: 1.5; }
+.eval-bar.idle { opacity: .35; }
+.eval-bar.idle .eval-label { display: none; }
+.classic-intro summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }

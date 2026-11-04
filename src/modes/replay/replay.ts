@@ -86,6 +86,23 @@ export function replayList(): Screen {
 export function replayScreen(id: string): Screen {
   const game = getGame(id);
   if (!game) return replayList();
+  return replayView(game, { back: replayList, persist: true });
+}
+
+export interface ReplayOptions {
+  /** layar tujuan tombol kembali */
+  back: () => Screen;
+  /** true: hasil analisa disimpan ke partai tersimpan. false: hanya di memori (mis. partai bawaan). */
+  persist: boolean;
+  /** catatan per langkah, kunci = nomor ply (1 = langkah pertama Putih) */
+  notes?: Record<number, string>;
+  /** kartu pengantar di bagian atas kolom info */
+  intro?: Node;
+}
+
+/** Penampil replay untuk satu partai: papan, navigasi, analisa engine, dan (opsional) catatan per langkah. */
+export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
+  const { notes } = opts;
 
   const parser = new Chess();
   try {
@@ -121,6 +138,13 @@ export function replayScreen(id: string): Screen {
 
   const analysis = (): MoveAnalysis[] => game!.analysis ?? [];
 
+  const saveCopy = (ev: Event) => {
+    const btn = ev.currentTarget as HTMLButtonElement;
+    saveGame({ ...game, id: newId(), mode: 'import', createdAt: Date.now() });
+    btn.textContent = '✔ Tersimpan di Replay';
+    btn.disabled = true;
+  };
+
   function show() {
     const a = analysis();
     const cur: MoveAnalysis | undefined = idx > 0 ? a[idx - 1] : undefined;
@@ -142,6 +166,7 @@ export function replayScreen(id: string): Screen {
 
     evalBar.set(cur ? cur.evalAfter : { cp: 0, mate: null });
     evalBar.setFlip(flip);
+    evalBar.el.classList.toggle('idle', a.length === 0); // belum dianalisa: bar tidak menunjukkan apa-apa
     moves.render(sans, a, idx);
 
     if (idx === 0) cardBox.replaceChildren(h('div', { class: 'card muted' }, 'Posisi awal.'));
@@ -150,6 +175,11 @@ export function replayScreen(id: string): Screen {
       if (alt) cardBox.append(h('div', { class: 'card' }, h('strong', {}, `Alternatif lebih baik: ${cur.engineBest.san}`), h('p', { class: 'muted' }, 'Papan menampilkan posisi sebelum langkah.')));
     } else {
       cardBox.replaceChildren(h('div', { class: 'card muted' }, `${Math.ceil(idx / 2)}${idx % 2 ? '.' : '...'} ${sans[idx - 1]} · jalankan analisa untuk melihat penilaian.`));
+    }
+
+    const note = notes?.[idx];
+    if (note) {
+      cardBox.append(h('div', { class: 'card note' }, h('strong', {}, '📝 Catatan'), h('p', {}, note)));
     }
 
     // nama opening dari posisi (tanpa engine)
@@ -192,7 +222,7 @@ export function replayScreen(id: string): Screen {
       });
       game!.analysis = res;
       game!.accuracy = accuracyOf(res);
-      saveGame(game!);
+      if (opts.persist) saveGame(game!);
       if (destroyed) return;
       progress.textContent = '';
       renderSummary();
@@ -214,10 +244,10 @@ export function replayScreen(id: string): Screen {
 
   const el = gameLayout(
     h('header', { class: 'bar' },
-      h('button', { class: 'btn ghost', onclick: () => go(replayList) }, '←'),
+      h('button', { class: 'btn ghost', 'aria-label': 'Kembali', onclick: () => go(opts.back) }, '←'),
       h('h2', {}, `${game.white} vs ${game.black}`)),
     [opening, boardWithBar(evalBar.el, board.el)],
-    [h('div', { class: 'row nav' },
+    [opts.intro ?? null, h('div', { class: 'row nav' },
       h('button', { class: 'btn', onclick: () => step(-999) }, '⏮'),
       h('button', { class: 'btn', onclick: () => step(-1) }, '◀'),
       h('button', { class: 'btn', onclick: () => step(1) }, '▶'),
@@ -227,6 +257,7 @@ export function replayScreen(id: string): Screen {
     cardBox, graphBox, summary, analyseBtn, progress, moves.el,
     h('div', { class: 'row' },
       copyBtn,
+      opts.persist ? null : h('button', { class: 'btn', onclick: saveCopy }, '💾 Simpan ke Replay saya'),
       h('button', { class: 'btn', onclick: () => downloadText(`${safeFilename(`${game.white}-vs-${game.black}`)}.pgn`, game.pgn, 'application/x-chess-pgn') }, '⬇ Unduh PGN'))],
   );
 
