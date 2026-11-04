@@ -1,5 +1,7 @@
 import type { Chess } from 'chess.js';
+import { CLASS_LABEL, CLASS_SYMBOL } from '../../core/analysis/analyzer';
 import { legalTargets, needsPromotion } from '../../core/game/game';
+import type { MoveClass } from '../../types';
 import { clear, h } from '../dom';
 import { play } from '../sound';
 
@@ -13,6 +15,8 @@ export interface BoardView {
   last?: [string, string] | null;
   hint?: string[] | null;
   flip?: boolean;
+  /** lencana kualitas langkah (Brilian, Blunder, ...) di pojok kanan atas bidak pada petak `sq` */
+  badge?: { sq: string; cls: MoveClass } | null;
   /** pihak yang boleh digerakkan lewat klik; null = papan hanya tampilan */
   movable?: 'w' | 'b' | 'both' | null;
 }
@@ -214,6 +218,9 @@ export class Board {
 
         const el = h('div', { class: cls.join(' '), 'data-sq': sq });
         if (cell) el.append(pieceImg(cell.color, cell.type));
+        if (this.view.badge?.sq === sq) {
+          el.append(h('span', { class: `sq-badge ${this.view.badge.cls}`, title: CLASS_LABEL[this.view.badge.cls], 'aria-label': CLASS_LABEL[this.view.badge.cls] }, CLASS_SYMBOL[this.view.badge.cls]));
+        }
         if (c === 0) el.append(h('i', { class: 'coord rank' }, String(rank + 1)));
         if (r === 7) el.append(h('i', { class: 'coord file' }, FILES[file]!));
         this.grid.append(el);

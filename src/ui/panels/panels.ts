@@ -1,4 +1,5 @@
 import { CLASS_LABEL, CLASS_SYMBOL, commentFor } from '../../core/analysis/analyzer';
+import type { Explanation } from '../../core/analysis/explain';
 import { tr } from '../../core/i18n';
 import { winPercent } from '../../core/analysis/classifier';
 import type { Evaluation, MoveAnalysis, MoveClass } from '../../types';
@@ -100,6 +101,16 @@ export function analysisCard(a: MoveAnalysis | null, opts: { pending?: boolean; 
     h('p', {}, commentFor(a)),
     a.opening && a.classification !== 'book' ? h('p', { class: 'muted' }, `Opening: ${a.opening.name}`) : null,
   );
+}
+
+/** Kartu analisa mendalam: alasan di balik kategori dan skor sebuah langkah. */
+export function deepCard(exp: Explanation | null, opts: { pending?: boolean } = {}): HTMLElement {
+  if (!exp) return h('div', { class: 'card pending deep' }, opts.pending ? tr('Looking deeper…', 'Menganalisa lebih dalam…') : '');
+  return h('div', { class: 'card deep' },
+    h('strong', {}, tr('🔍 Deep analysis', '🔍 Analisa mendalam')),
+    h('ul', { class: 'points' }, ...exp.points.map((p) => h('li', {}, p))),
+    exp.bestLine ? h('p', { class: 'line' }, h('b', {}, tr('Engine prefers: ', 'Pilihan engine: ')), exp.bestLine) : null,
+    exp.replyLine ? h('p', { class: 'line' }, h('b', {}, tr('Likely continuation: ', 'Kelanjutan yang mungkin: ')), exp.replyLine) : null);
 }
 
 /** Grafik peluang menang sepanjang partai; klik untuk loncat ke langkah. */

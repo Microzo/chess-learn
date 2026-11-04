@@ -78,3 +78,22 @@ function baseline(fen: string, mover: 'w' | 'b'): number {
 export function legalMoveCount(fen: string): number {
   return new Chess(fen).moves().length;
 }
+
+/**
+ * Penangkapan terbaik bagi pihak yang jalan di `fen`, dinilai sampai rangkaian penukaran selesai.
+ * `gain` = poin material bersih yang didapat (> 0), atau null bila tidak ada yang menguntungkan.
+ */
+export function bestCaptureGain(fen: string): { san: string; gain: number } | null {
+  const chess = new Chess(fen);
+  const side = chess.turn();
+  const base = materialBalance(chess, side);
+  let best: { san: string; gain: number } | null = null;
+  for (const m of chess.moves({ verbose: true })) {
+    if (!m.captured) continue;
+    chess.move(m);
+    const gain = -quiescence(chess, -1000, 1000, 8) - base;
+    chess.undo();
+    if (gain > 0 && (!best || gain > best.gain)) best = { san: m.san, gain };
+  }
+  return best;
+}

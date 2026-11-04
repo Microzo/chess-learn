@@ -1,6 +1,7 @@
 import { Chess } from 'chess.js';
 import { go, type Screen } from '../../app/router';
 import { accuracyOf, uciOf } from '../../core/analysis/analyzer';
+import { explainMove } from '../../core/analysis/explain';
 import { BOT_LEVELS, type BotLevel } from '../../core/engine/levels';
 import { engineReady, getAnalyzer, getEngine } from '../../core/engine/instance';
 import { statusOf, toPgn, type Result } from '../../core/game/game';
@@ -10,7 +11,7 @@ import { Board } from '../../ui/board/board';
 import { tr } from '../../core/i18n';
 import { h } from '../../ui/dom';
 import { boardWithBar, gameLayout } from '../../ui/layout';
-import { analysisCard, badge, EvalBar, MoveList } from '../../ui/panels/panels';
+import { analysisCard, badge, deepCard, EvalBar, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 import { replayScreen } from '../replay/replay';
 
@@ -77,8 +78,12 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
   let resigned: Result | null = null;
   let last: [string, string] | null = null;
   let hint: [string, string] | null = null;
+  let deep = false;
+  let deepToken = 0;
 
   const board = new Board((f, t, p) => void playerMove(f, t, p));
+  const deepBox = h('div', { class: 'cardbox' });
+  const deepBtn = h('button', { class: 'btn', 'aria-pressed': 'false', onclick: () => { deep = !deep; refreshDeep(); } }, tr('🔍 Why?', '🔍 Kenapa?'));
   const evalBar = new EvalBar();
   evalBar.setFlip(player === 'b');
   const status = h('div', { class: 'status' }, tr('Loading engine…', 'Memuat engine…'));
@@ -92,9 +97,23 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
 
   const isOver = () => resigned !== null || statusOf(chess).over;
 
+  /** Penjelasan mendalam untuk langkah terakhir pemain (bukan bot). */
+  function refreshDeep() {
+    deepBtn.classList.toggle('on', deep);
+    deepBtn.setAttribute('aria-pressed', String(deep));
+    const token = ++deepToken;
+    const mine = analyses.filter((x) => (x.ply % 2 === 1) === (player === 'w')).at(-1);
+    if (!deep || !mine) { deepBox.replaceChildren(); return; }
+    deepBox.replaceChildren(deepCard(null, { pending: true }));
+    explainMove(mine, analyzer).then(
+      (ex) => { if (!destroyed && token === deepToken) deepBox.replaceChildren(deepCard(ex)); },
+      () => { if (token === deepToken) deepBox.replaceChildren(); });
+  }
+
   function draw() {
     const over = isOver();
-    board.set(chess, { last, hint, flip: player === 'b', movable: !busy && !over ? player : null });
+    const lastA = analyses.length === chess.history().length ? analyses[analyses.length - 1] : undefined;
+    board.set(chess, { last, hint, flip: player === 'b', movable: !busy && !over ? player : null, badge: lastA && last ? { sq: last[1], cls: lastA.classification } : null });
     const n = chess.history().length;
     moves.render(chess.history(), analyses, n);
     const st = statusOf(chess);
@@ -158,6 +177,8 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
       cardBox.replaceChildren(analysisCard(a));
       evalBar.set(a.evalAfter);
       persist();
+      draw();
+      refreshDeep();
     } catch (e) {
       return fail(e);
     }
@@ -224,6 +245,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
     if (n < count + (player === 'b' ? 1 : 0)) return;
     for (let i = 0; i < count; i++) { chess.undo(); analyses.pop(); }
     last = null; hint = null;
+    refreshDeep();
     cardBox.replaceChildren(analysisCard(null, { title: tr('Move taken back. Try another move!', 'Langkah diulang. Coba langkah lain!') }));
     botLine.replaceChildren();
     const lastA = analyses[analyses.length - 1];
@@ -251,7 +273,7 @@ export function learningGame(player: 'w' | 'b', level: BotLevel, guided = true):
       h('h2', {}, tr(`Learn · ${botName}`, `Belajar · ${botName}`))),
     [guided ? boardWithBar(evalBar.el, board.el) : board.el, status],
     guided
-      ? [cardBox, botLine, h('div', { class: 'row' }, hintBtn, undoBtn, resignBtn), endBox, moves.el]
+      ? [cardBox, deepBox, botLine, h('div', { class: 'row' }, hintBtn, deepBtn, undoBtn, resignBtn), endBox, moves.el]
       : [h('div', { class: 'row' }, undoBtn, resignBtn), endBox, moves.el],
   );
 

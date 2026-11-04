@@ -273,3 +273,18 @@ code { background: var(--panel2); padding: 1px 6px; border-radius: 4px; font-fam
 .bar-track { height: 10px; background: var(--panel2); border-radius: 5px; overflow: hidden; }
 .bar-fill { height: 100%; background: var(--c-mistake); border-radius: 5px; transition: width .3s; }
 .bar-fill.ok { background: var(--c-best); }
+
+/* lencana kualitas langkah di pojok kanan atas bidak */
+.sq-badge { position: absolute; top: 1px; right: 1px; z-index: 5; display: grid; place-items: center; min-width: calc(var(--bs) / 8 * .38); height: calc(var(--bs) / 8 * .38); padding: 0 2px; border-radius: 999px; font-size: calc(var(--bs) / 8 * .22); font-weight: 800; line-height: 1; color: #111; background: #888; border: 1.5px solid #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .5); pointer-events: none; }
+.sq-badge.book { background: var(--c-book); }
+.sq-badge.brilliant { background: var(--c-brilliant); }
+.sq-badge.great { background: var(--c-great); }
+.sq-badge.best { background: var(--c-best); }
+.sq-badge.excellent { background: var(--c-excellent); }
+.sq-badge.good { background: var(--c-good); }
+.sq-badge.inaccuracy { background: var(--c-inaccuracy); }
+.sq-badge.mistake { background: var(--c-mistake); }
+.sq-badge.blunder { background: var(--c-blunder); color: #fff; }
+.card.deep { border-left-color: var(--accent); gap: 6px; }
+.card.deep .points { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; line-height: 1.45; }
+.card.deep .line { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; word-break: break-word; }

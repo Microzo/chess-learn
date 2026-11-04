@@ -1,6 +1,7 @@
 import { Chess } from 'chess.js';
 import { go, type Screen } from '../../app/router';
 import { accuracyOf, classCounts, CLASS_LABEL } from '../../core/analysis/analyzer';
+import { explainMove } from '../../core/analysis/explain';
 import { openingAt } from '../../core/analysis/openings';
 import { engineReady, getAnalyzer } from '../../core/engine/instance';
 import { deleteGame, exportBackup, getGame, importBackup, listGames, newId, saveGame } from '../../core/storage/games';
@@ -10,7 +11,7 @@ import { tr } from '../../core/i18n';
 import { h } from '../../ui/dom';
 import { boardWithBar, gameLayout } from '../../ui/layout';
 import { copyText, downloadText, localDate, safeFilename } from '../../ui/download';
-import { analysisCard, badge, EvalBar, evalGraph, MoveList } from '../../ui/panels/panels';
+import { analysisCard, badge, deepCard, EvalBar, evalGraph, MoveList } from '../../ui/panels/panels';
 import { homeScreen } from '../../ui/screens/home';
 
 const MODE_LABEL = {
@@ -123,8 +124,12 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
   let showBest = false;
   let flip = false;
   let destroyed = false;
+  let deep = false;
+  let deepToken = 0;
 
   const board = new Board(() => undefined);
+  const deepBox = h('div', { class: 'cardbox' });
+  const deepBtn = h('button', { class: 'btn', 'aria-pressed': 'false', onclick: () => { deep = !deep; show(); } }, tr('🔍 Deep', '🔍 Mendalam'));
   const evalBar = new EvalBar();
   const cardBox = h('div', { class: 'cardbox' });
   const summary = h('div', { class: 'card summary' });
@@ -167,7 +172,9 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
       movable: null,
       last: alt ? null : m ? [m.from, m.to] : null,
       hint: alt ? [cur!.engineBest.uci.slice(0, 2), cur!.engineBest.uci.slice(2, 4)] : null,
+      badge: !alt && cur && m ? { sq: m.to, cls: cur.classification } : null,
     });
+    refreshDeep(cur);
 
     evalBar.set(cur ? cur.evalAfter : { cp: 0, mate: null });
     evalBar.setFlip(flip);
@@ -199,6 +206,25 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
       const evals: Evaluation[] = [{ cp: 0, mate: null }, ...a.map((x) => x.evalAfter)];
       graphBox.append(evalGraph(evals, idx, (p) => { idx = p; show(); }));
     }
+  }
+
+  /** Analisa mendalam langkah saat ini; hasil lama dibuang bila pengguna sudah pindah langkah. */
+  function refreshDeep(cur: MoveAnalysis | undefined) {
+    const token = ++deepToken;
+    deepBtn.classList.toggle('on', deep);
+    deepBtn.setAttribute('aria-pressed', String(deep));
+    deepBtn.toggleAttribute('disabled', !cur);
+    if (!deep || !cur) { deepBox.replaceChildren(); return; }
+    deepBox.replaceChildren(deepCard(null, { pending: true }));
+    (async () => {
+      try {
+        await engineReady();
+        const ex = await explainMove(cur, getAnalyzer());
+        if (!destroyed && token === deepToken) deepBox.replaceChildren(deepCard(ex));
+      } catch {
+        if (token === deepToken) deepBox.replaceChildren();
+      }
+    })();
   }
 
   function renderSummary() {
@@ -257,9 +283,9 @@ export function replayView(game: SavedGame, opts: ReplayOptions): Screen {
       h('button', { class: 'btn', onclick: () => step(-1) }, '◀'),
       h('button', { class: 'btn', onclick: () => step(1) }, '▶'),
       h('button', { class: 'btn', onclick: () => step(999) }, '⏭'),
-      bestBtn,
+      bestBtn, deepBtn,
       h('button', { class: 'btn', onclick: () => { flip = !flip; show(); } }, '⟲')),
-    cardBox, graphBox, summary, analyseBtn, progress, moves.el,
+    cardBox, deepBox, graphBox, summary, analyseBtn, progress, moves.el,
     h('div', { class: 'row' },
       copyBtn,
       opts.persist ? null : h('button', { class: 'btn', onclick: saveCopy }, tr('💾 Save to my Replay', '💾 Simpan ke Replay saya')),

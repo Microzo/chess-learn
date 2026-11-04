@@ -109,3 +109,21 @@ describe('Board', () => {
     expect(occupied(document, 'e2')).toBe(true);
   });
 });
+
+describe('lencana kualitas langkah', () => {
+  it('muncul hanya di petak yang ditunjuk, dengan simbol dan nama kategori', () => {
+    const chess = new Chess();
+    chess.move('e4');
+    mountBoard({ badge: { sq: 'e4', cls: 'brilliant' } }, chess);
+    const badges = document.querySelectorAll('.board .sq-badge');
+    expect(badges).toHaveLength(1);
+    expect(badges[0]!.parentElement!.getAttribute('data-sq')).toBe('e4');
+    expect(badges[0]!.textContent).toBe('!!');
+    expect(badges[0]!.classList.contains('brilliant')).toBe(true);
+    expect(badges[0]!.getAttribute('aria-label')).toBeTruthy();
+  });
+  it('tidak ada lencana bila badge null', () => {
+    mountBoard({ badge: null });
+    expect(document.querySelectorAll('.sq-badge')).toHaveLength(0);
+  });
+});
