@@ -58,4 +58,16 @@ export const ENDGAMES: EndgameDrill[] = [
     task: ['You are Black. Hold the draw against the stronger side.', 'Kamu Hitam. Pertahankan remis melawan pihak yang lebih kuat.'],
     hint: ['Keep the rook on the sixth rank; when the pawn advances, check from behind.', 'Benteng tetap di baris keenam; saat bidak maju, skak dari belakang.'],
   },
+  {
+    id: 'stalemate-trap', fen: '7k/8/6K1/8/8/8/8/5Q2 w - - 0 1', player: 'w', goal: 'win', level: 'beginner', lesson: 'menang-seri',
+    title: ['Avoid the stalemate trap', 'Hindari jebakan pat'],
+    task: ['Checkmate in one move, but beware: some queen moves are stalemate!', 'Skakmat dalam satu langkah, tetapi awas: beberapa langkah ratu justru pat!'],
+    hint: ['Look for a check that the king protects, such as on the f8 square.', 'Cari skak yang dilindungi raja, misalnya di petak f8.'],
+  },
+  {
+    id: 'kbb-k', fen: '8/8/8/4k3/8/8/8/KBB5 w - - 0 1', player: 'w', goal: 'win', level: 'advanced', lesson: 'pasangan-gajah',
+    title: ['Two bishops mate', 'Mat dengan dua gajah'],
+    task: ['Checkmate with king and two bishops. It takes up to about 19 moves.', 'Skakmat dengan raja dan dua gajah. Butuh hingga sekitar 19 langkah.'],
+    hint: ['Drive the king to a corner with the bishops side by side, then bring your king up.', 'Dorong raja ke sudut dengan gajah berdampingan, lalu dekatkan rajamu.'],
+  },
 ];
