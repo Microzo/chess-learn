@@ -35,6 +35,10 @@ describe('positionalNotes', () => {
     _forceLang('en');
     expect(run('6k1/8/2pr4/8/8/2N5/8/4K3 w - - 0 1', 'c3b5', '6k1/8/2pr4/1N6/8/8/8/4K3 b - - 1 1')).not.toContain('attacks');
   });
+  it('pertahanan: ratu yang diserang dipindahkan ke tempat aman', () => {
+    _forceLang('en');
+    expect(run('4k3/8/2n5/8/3Q4/8/8/4K3 w - - 0 1', 'd4d3', '4k3/8/2n5/8/8/3Q4/8/4K3 b - - 1 1')).toContain('moves the attacked queen to safety');
+  });
   it('tidak melempar pada FEN rusak', () => {
     expect(positionalNotes('x', 'y', 'e2e4', 1)).toEqual([]);
   });

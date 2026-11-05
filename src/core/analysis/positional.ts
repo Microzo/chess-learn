@@ -64,6 +64,23 @@ function mobility(fen: string, side: Color): number | null {
   }
 }
 
+/** Buah `color` yang sedang terancam: diserang dan tidak terjaga, atau diserang buah yang lebih murah. */
+function enPrise(g: Chess, color: Color): { sq: string; type: string }[] {
+  const foe: Color = color === 'w' ? 'b' : 'w';
+  const out: { sq: string; type: string }[] = [];
+  for (const row of g.board()) {
+    for (const c of row) {
+      if (!c || c.color !== color || c.type === 'k') continue;
+      const att = g.attackers(c.square, foe);
+      if (!att.length) continue;
+      const lowest = Math.min(...att.map((a) => VAL[g.get(a as never)!.type] ?? 100));
+      const defended = g.attackers(c.square, color).length > 0;
+      if (!defended || lowest < VAL[c.type]!) out.push({ sq: c.square, type: c.type });
+    }
+  }
+  return out;
+}
+
 export function positionalNotes(fenBefore: string, fenAfter: string, uci: string, ply: number): string[] {
   const out: string[] = [];
   let before: Chess; let after: Chess;
@@ -142,6 +159,19 @@ export function positionalNotes(fenBefore: string, fenAfter: string, uci: string
       if (target) out.push(tr(
         `The ${nm(moved.type)} now attacks the ${nm(target.type)} on ${target.sq}${target.free ? ', which is undefended' : ', a more valuable piece'}, creating a threat.`,
         `${nm(moved.type)[0]!.toUpperCase()}${nm(moved.type).slice(1)} kini menyerang ${nm(target.type)} di ${target.sq}${target.free ? ' yang tidak terjaga' : ', buah yang lebih bernilai'}, sehingga menciptakan ancaman.`));
+    }
+  }
+
+  // pertahanan: langkah menyelamatkan atau melindungi buah sendiri yang terancam
+  if (!after.inCheck() && !before.inCheck()) {
+    const was = enPrise(before, side);
+    const now = enPrise(after, side).map((x) => x.sq);
+    const saved = was.filter((x) => (x.sq === from ? !now.includes(to) : !now.includes(x.sq)))
+      .sort((a, b) => VAL[b.type]! - VAL[a.type]!)[0];
+    if (saved && saved.type !== 'p') {
+      out.push(saved.sq === from
+        ? tr(`It moves the attacked ${nm(saved.type)} to safety.`, `${nm(saved.type)[0]!.toUpperCase()}${nm(saved.type).slice(1)} yang diserang dipindahkan ke tempat aman.`)
+        : tr(`It deals with the threat to the ${nm(saved.type)} on ${saved.sq}.`, `Langkah ini mengatasi ancaman terhadap ${nm(saved.type)} di ${saved.sq}.`));
     }
   }
 
