@@ -2,6 +2,7 @@
 import { Chess } from 'chess.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Board } from '../../src/ui/board/board';
+import { resetSettings, updateSettings } from '../../src/core/settings';
 import { move, occupied, piecesOnBoard, sq, tap } from './helpers';
 
 function mountBoard(view: ConstructorParameters<typeof Object>[0] = {}, chess = new Chess()) {
@@ -121,6 +122,14 @@ describe('lencana kualitas langkah', () => {
     expect(badges[0]!.textContent).toBe('!!');
     expect(badges[0]!.classList.contains('brilliant')).toBe(true);
     expect(badges[0]!.getAttribute('aria-label')).toBeTruthy();
+  });
+  it('disembunyikan bila pengaturan Lencana langkah dimatikan', () => {
+    const chess = new Chess();
+    chess.move('e4');
+    updateSettings({ badges: false });
+    mountBoard({ badge: { sq: 'e4', cls: 'brilliant' } }, chess);
+    expect(document.querySelectorAll('.sq-badge')).toHaveLength(0);
+    resetSettings();
   });
   it('tidak ada lencana bila badge null', () => {
     mountBoard({ badge: null });

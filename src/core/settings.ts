@@ -19,6 +19,8 @@ export interface Settings {
   board: BoardTheme;
   coords: boolean;
   evalBar: boolean;
+  /** lencana kualitas langkah di papan */
+  badges: boolean;
   muted: boolean;
   /** 0..1 */
   volume: number;
@@ -27,7 +29,7 @@ export interface Settings {
 const KEY = 'chesslearn.settings';
 const OLD_MUTED_KEY = 'chesslearn.muted'; // dipakai sebelum ada layar pengaturan
 
-export const DEFAULTS: Settings = { lang: 'en', theme: 'gelap', board: 'hijau', coords: true, evalBar: true, muted: false, volume: 0.7 };
+export const DEFAULTS: Settings = { lang: 'en', theme: 'gelap', board: 'hijau', coords: true, evalBar: true, badges: true, muted: false, volume: 0.7 };
 
 let current: Settings | null = null;
 
@@ -40,6 +42,7 @@ function sanitize(raw: unknown, fallback: Settings): Settings {
     board: typeof o['board'] === 'string' && Object.hasOwn(BOARD_THEMES, o['board']) ? (o['board'] as BoardTheme) : fallback.board,
     coords: typeof o['coords'] === 'boolean' ? o['coords'] : fallback.coords,
     evalBar: typeof o['evalBar'] === 'boolean' ? o['evalBar'] : fallback.evalBar,
+    badges: typeof o['badges'] === 'boolean' ? o['badges'] : fallback.badges,
     muted: typeof o['muted'] === 'boolean' ? o['muted'] : fallback.muted,
     volume: vol,
   };

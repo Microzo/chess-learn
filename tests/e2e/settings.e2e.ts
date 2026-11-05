@@ -203,3 +203,14 @@ test('versi tampil di beranda dan Pengaturan, tombol cek pembaruan menjawab', as
   await page.getByRole('button', { name: 'Cek pembaruan' }).click();
   await expect(page.locator('[role="status"]').filter({ hasText: /terbaru|ditemukan|terpasang/ })).toBeVisible();
 });
+
+test('saklar Lencana langkah ada di Pengaturan dan bertahan setelah muat ulang', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /Pengaturan/ }).click();
+  const sw = page.locator('#set-badges');
+  await expect(sw).toBeChecked();
+  await sw.uncheck();
+  await page.reload();
+  await page.getByRole('button', { name: /Pengaturan/ }).click();
+  await expect(page.locator('#set-badges')).not.toBeChecked();
+});
