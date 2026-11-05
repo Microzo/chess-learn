@@ -5,6 +5,11 @@ import { tr } from '../i18n';
 
 type Board = ReturnType<Chess['board']>;
 const FILES = 'abcdefgh';
+const VAL: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
+const NAME: Record<string, readonly [string, string]> = {
+  p: ['pawn', 'bidak'], n: ['knight', 'kuda'], b: ['bishop', 'gajah'], r: ['rook', 'benteng'], q: ['queen', 'ratu'], k: ['king', 'raja'],
+};
+const nm = (t: string) => tr(NAME[t]![0], NAME[t]![1]);
 
 interface PawnInfo { doubled: number; isolated: number; passed: number }
 
@@ -117,6 +122,27 @@ export function positionalNotes(fenBefore: string, fenAfter: string, uci: string
   }
   if (!castled && piece.type === 'k' && ply <= 30 && Math.abs(from.charCodeAt(0) - to.charCodeAt(0)) <= 1) {
     out.push(tr('The king moves without castling, so it loses castling rights and may be exposed.', 'Raja berjalan tanpa rokade, sehingga kehilangan hak rokade dan bisa terbuka.'));
+  }
+
+  // ancaman baru: buah yang baru pindah menyerang buah lawan yang tak terjaga atau lebih bernilai
+  const moved = after.get(to as never);
+  if (moved && !before.get(to as never) && moved.type !== 'k' && !after.inCheck()) {
+    const lowestAttacker = Math.min(100, ...after.attackers(to as never, opp).map((a) => VAL[after.get(a as never)!.type] ?? 100));
+    if (lowestAttacker >= VAL[moved.type]!) {
+      let target: { sq: string; type: string; free: boolean } | null = null;
+      for (const row of ab) {
+        for (const c of row) {
+          if (!c || c.color !== opp || c.type === 'k' || c.type === 'p') continue;
+          if (!after.attackers(c.square, side).includes(to as never)) continue;
+          const free = after.attackers(c.square, opp).length === 0;
+          if (!free && VAL[c.type]! <= VAL[moved.type]!) continue;
+          if (!target || VAL[c.type]! > VAL[target.type]!) target = { sq: c.square, type: c.type, free };
+        }
+      }
+      if (target) out.push(tr(
+        `The ${nm(moved.type)} now attacks the ${nm(target.type)} on ${target.sq}${target.free ? ', which is undefended' : ', a more valuable piece'}, creating a threat.`,
+        `${nm(moved.type)[0]!.toUpperCase()}${nm(moved.type).slice(1)} kini menyerang ${nm(target.type)} di ${target.sq}${target.free ? ' yang tidak terjaga' : ', buah yang lebih bernilai'}, sehingga menciptakan ancaman.`));
+    }
   }
 
   // mobilitas

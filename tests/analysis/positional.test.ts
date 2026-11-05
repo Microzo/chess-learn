@@ -27,6 +27,14 @@ describe('positionalNotes', () => {
     const f = '4k3/8/8/4p3/3P4/8/8/4K3 w - - 0 1';
     expect(run(f, 'd4e5', '4k3/8/8/4P3/8/8/8/4K3 b - - 0 1')).toContain('passed pawn');
   });
+  it('ancaman: kuda menyerang benteng tak terjaga', () => {
+    _forceLang('en');
+    expect(run('6k1/8/3r4/8/8/2N5/8/4K3 w - - 0 1', 'c3b5', '6k1/8/3r4/1N6/8/8/8/4K3 b - - 1 1')).toContain('attacks the rook on d6');
+  });
+  it('tidak ada ancaman bila buah mendarat di petak yang dijaga bidak lawan', () => {
+    _forceLang('en');
+    expect(run('6k1/8/2pr4/8/8/2N5/8/4K3 w - - 0 1', 'c3b5', '6k1/8/2pr4/1N6/8/8/8/4K3 b - - 1 1')).not.toContain('attacks');
+  });
   it('tidak melempar pada FEN rusak', () => {
     expect(positionalNotes('x', 'y', 'e2e4', 1)).toEqual([]);
   });
